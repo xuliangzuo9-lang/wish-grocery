@@ -3,14 +3,14 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>愿望超市 | 愿望详情</title>
+  <title>愿望杂货铺 | 愿望详情</title>
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
   <div class="page-shell">
     <nav class="site-nav">
       <div class="brand-mark">
-        <strong>愿望超市</strong>
+        <strong>愿望杂货铺</strong>
         <span>单个愿望的详细管理页</span>
       </div>
       <div class="nav-links">
@@ -50,28 +50,15 @@
               </div>
             </div>
           </div>
-          <div class="panel">
-            <div class="goal-card-head">
-              <div>
+          <div class="panel detail-hero-card">
+            <div class="detail-hero-card-head">
+              <div class="detail-hero-card-copy">
                 <h3 id="detailCardName">-</h3>
                 <small id="detailCardDeadline">不设计划时间</small>
               </div>
               <div class="progress-ring" id="detailProgressRing">0%</div>
             </div>
-            <div class="goal-finance">
-              <div class="goal-meta">
-                <span>已攒</span>
-                <strong id="detailMetaSaved">0 元</strong>
-              </div>
-              <div class="goal-meta">
-                <span>目标</span>
-                <strong id="detailMetaTarget">0 元</strong>
-              </div>
-              <div class="goal-meta">
-                <span>还差</span>
-                <strong id="detailMetaRemaining">0 元</strong>
-              </div>
-            </div>
+            <div class="detail-hero-visual" id="detailHeroVisual">愿</div>
             <p class="goal-tip" id="detailMetaTip"></p>
           </div>
         </section>
@@ -99,11 +86,16 @@
               </label>
               <label>
                 <span>目标图标</span>
-                <input name="icon" type="text" maxlength="4" placeholder="例如：✈、📚、🏠">
+                <input name="icon" type="text" maxlength="4" placeholder="例如：旅 / 学 / 家 / 书">
               </label>
               <label>
                 <span>目标图片 URL</span>
-                <input name="image" type="url" placeholder="可选：放一张代表这个愿望的图片链接">
+                <input name="image" type="text" placeholder="可选：放一张代表这个愿望的图片链接">
+              </label>
+              <label class="image-upload-stack">
+                <span>本地上传图片</span>
+                <input id="detailGoalImageFile" type="file" accept="image/*">
+                <small class="form-hint">手机可直接从相册选图，电脑可从本地文件选图，选好后会自动填入上面的图片内容。</small>
               </label>
               <label class="toggle-chip">
                 <input name="hasDeadline" type="checkbox" checked>
@@ -167,14 +159,13 @@
     const detailCardNameEl = document.getElementById("detailCardName");
     const detailCardDeadlineEl = document.getElementById("detailCardDeadline");
     const detailProgressRingEl = document.getElementById("detailProgressRing");
-    const detailMetaSavedEl = document.getElementById("detailMetaSaved");
-    const detailMetaTargetEl = document.getElementById("detailMetaTarget");
-    const detailMetaRemainingEl = document.getElementById("detailMetaRemaining");
+    const detailHeroVisualEl = document.getElementById("detailHeroVisual");
     const detailMetaTipEl = document.getElementById("detailMetaTip");
     const detailTogglePinEl = document.getElementById("detailTogglePin");
     const detailCompleteGoalEl = document.getElementById("detailCompleteGoal");
     const detailReopenGoalEl = document.getElementById("detailReopenGoal");
     const detailDeleteGoalEl = document.getElementById("detailDeleteGoal");
+    const detailGoalImageFileEl = document.getElementById("detailGoalImageFile");
 
     function getGoalView() {
       return BudgetCore.getGoalById(state, goalId);
@@ -225,6 +216,15 @@
       };
     }
 
+    function readFileAsDataUrl(file) {
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(String(reader.result || ""));
+        reader.onerror = () => reject(reader.error);
+        reader.readAsDataURL(file);
+      });
+    }
+
     function fillForm(goal) {
       formEl.elements.name.value = goal.name;
       formEl.elements.target.value = String(goal.target);
@@ -260,14 +260,14 @@
       detailGoalStatusEl.textContent = renderGoal.status === "completed" ? "已完成目标" : (renderGoal.isPinned ? "主要目标" : "活跃目标");
       detailGoalSavedEl.textContent = BudgetCore.formatCurrency(renderGoal.saved);
       detailGoalRemainingEl.textContent = BudgetCore.formatCurrency(renderGoal.remaining);
-      detailCardNameEl.textContent = `${renderGoal.icon || "🎯"} ${renderGoal.name}`;
+      detailCardNameEl.textContent = renderGoal.name;
       detailCardDeadlineEl.textContent = renderGoal.hasDeadline && renderGoal.deadline ? `计划时间：${BudgetCore.formatDate(renderGoal.deadline)}` : "不设计划时间";
       detailProgressRingEl.textContent = `${percent}%`;
       detailProgressRingEl.style.setProperty("--progress", `${percent * 3.6}deg`);
       detailProgressRingEl.style.setProperty("--goal-color", renderGoal.color);
-      detailMetaSavedEl.textContent = BudgetCore.formatCurrency(renderGoal.saved);
-      detailMetaTargetEl.textContent = BudgetCore.formatCurrency(renderGoal.target);
-      detailMetaRemainingEl.textContent = BudgetCore.formatCurrency(renderGoal.remaining);
+      detailHeroVisualEl.innerHTML = renderGoal.image
+        ? `<img alt="${BudgetCore.escapeHtml(renderGoal.name)}" src="${BudgetCore.escapeHtml(renderGoal.image)}">`
+        : BudgetCore.escapeHtml(renderGoal.icon || "愿");
       detailMetaTipEl.textContent = renderGoal.note ? `${renderGoal.note} · ${renderGoal.tip}` : renderGoal.tip;
 
       detailTogglePinEl.textContent = renderGoal.isPinned ? "取消主要目标" : "设为主要目标";
@@ -282,6 +282,17 @@
     });
 
     formEl.addEventListener("change", () => {
+      syncDraftFromForm();
+      renderDetail();
+    });
+
+    detailGoalImageFileEl.addEventListener("change", async () => {
+      const file = detailGoalImageFileEl.files?.[0];
+      if (!file) {
+        return;
+      }
+      const imageDataUrl = await readFileAsDataUrl(file);
+      formEl.elements.image.value = imageDataUrl;
       syncDraftFromForm();
       renderDetail();
     });

@@ -37,7 +37,30 @@ const motivationalQuotes = [
   { text: "你不是在省钱，你是在为想要的人生提前铺路。", author: "目标提醒" },
   { text: "每一笔克制住的冲动消费，都会变成未来更自由的选择。", author: "自我鼓励" },
   { text: "慢慢存，也是在认真地爱自己的未来。", author: "温柔进步" },
-  { text: "真正让人安心的，不是赚了多少，而是目标在一点点实现。", author: "进度宣言" }
+  { text: "真正让人安心的，不是赚了多少，而是目标在一点点实现。", author: "进度宣言" },
+  { text: "攒下来的不是小钱，是下一次出发的底气。", author: "愿望进度板" },
+  { text: "今天少一点随手花，明天就多一点主动权。", author: "预算提醒" },
+  { text: "钱慢慢到位，生活也会慢慢向理想靠近。", author: "稳稳前进" },
+  { text: "愿望不是空想，愿意持续准备，它就会落地。", author: "给自己的话" },
+  { text: "看见进度，就是继续坚持最好的理由。", author: "进度宣言" },
+  { text: "你每一次认真分配收入，都是在保护未来的自己。", author: "理财提醒" },
+  { text: "先照顾长期目标，短暂欲望就没那么吵了。", author: "自律时刻" },
+  { text: "把钱放进愿望里，本身就是一种温柔的自我奖励。", author: "愿望杂货铺" },
+  { text: "不乱花钱，不是委屈自己，是把快乐留给更重要的事。", author: "克制也自由" },
+  { text: "一点一点凑齐目标，比突然努力更可靠。", author: "稳定积累" },
+  { text: "预算清楚了，心也会更安定。", author: "生活秩序" },
+  { text: "每一笔进入目标的钱，都在替未来铺灯。", author: "今日激励" },
+  { text: "你现在的认真，正在给以后的自己腾出余地。", author: "长期主义" },
+  { text: "不是所有喜欢都要立刻买下，很多愿望值得慢慢成全。", author: "消费提醒" },
+  { text: "目标可视化之后，坚持会变得容易很多。", author: "进度观察" },
+  { text: "账户有计划，生活就不容易慌张。", author: "日常管理" },
+  { text: "每次拒绝无意义消费，都是在对重要愿望点头。", author: "愿望优先" },
+  { text: "你不是在推迟快乐，你是在换一种更大的快乐。", author: "理性奖励" },
+  { text: "能看见差多少，也就更知道下一步该往哪走。", author: "路线清晰" },
+  { text: "别急，很多好事都是先准备，再抵达。", author: "慢慢实现" },
+  { text: "今天存下的一小步，常常就是未来改变的一大步。", author: "今日激励" },
+  { text: "有目标地花钱，会让辛苦赚来的钱更有意义。", author: "花钱有方向" },
+  { text: "愿望不会自己长大，但会在你的安排里慢慢成真。", author: "愿望杂货铺" }
 ];
 
 const palette = ["#d9754f", "#487a72", "#d5a95a", "#7f6af2", "#b55d88", "#5a7ecb"];
@@ -115,6 +138,7 @@ const seedState = {
   ],
   ui: {
     showArchivedAllocations: true,
+    wishShelfRows: 2,
     theme: {
       accent: "#d9754f",
       accentDeep: "#8f4d34",
@@ -184,6 +208,7 @@ function normalizeState(raw) {
       : fallback.incomes.map((income, incomeIndex) => normalizeIncome(income, incomeIndex)),
     ui: {
       showArchivedAllocations: raw.ui?.showArchivedAllocations ?? true,
+      wishShelfRows: clampWishShelfRows(raw.ui?.wishShelfRows),
       theme: {
         accent: raw.ui?.theme?.accent ?? fallback.ui.theme.accent,
         accentDeep: raw.ui?.theme?.accentDeep ?? fallback.ui.theme.accentDeep,
@@ -194,6 +219,14 @@ function normalizeState(raw) {
       allocationItemVisibility: raw.ui?.allocationItemVisibility ?? {}
     }
   };
+}
+
+function clampWishShelfRows(value) {
+  const rows = Number(value || 2);
+  if (!Number.isFinite(rows)) {
+    return 2;
+  }
+  return Math.min(Math.max(Math.round(rows), 1), 999);
 }
 
 function saveState(state) {
@@ -395,17 +428,25 @@ function normalizeIncome(income, incomeIndex) {
   };
 }
 
-function getRandomQuote(excludeText = "") {
+function getRandomQuote(exclusions = []) {
   if (motivationalQuotes.length <= 1) {
     return motivationalQuotes[0];
   }
 
-  const pool = excludeText
-    ? motivationalQuotes.filter((item) => item.text !== excludeText)
+  const exclusionList = Array.isArray(exclusions)
+    ? exclusions.filter(Boolean)
+    : [exclusions].filter(Boolean);
+  const excludedTexts = new Set(exclusionList);
+  const pool = excludedTexts.size
+    ? motivationalQuotes.filter((item) => !excludedTexts.has(item.text))
     : motivationalQuotes;
 
   const safePool = pool.length ? pool : motivationalQuotes;
   return safePool[Math.floor(Math.random() * safePool.length)];
+}
+
+function getMotivationalQuotes() {
+  return motivationalQuotes.map((quote) => ({ ...quote }));
 }
 
 function getPinnedGoalCount(state) {
@@ -803,6 +844,11 @@ function updateTheme(state, theme) {
   saveState(state);
 }
 
+function updateWishShelfRows(state, rows) {
+  state.ui.wishShelfRows = clampWishShelfRows(rows);
+  saveState(state);
+}
+
 function deleteArchivedAllocationEntry(state, itemId) {
   let changed = false;
   state.incomes = state.incomes
@@ -875,6 +921,7 @@ window.BudgetCore = {
   daysBetween,
   escapeHtml,
   getRandomQuote,
+  getMotivationalQuotes,
   getPinnedGoalCount,
   togglePinnedGoal,
   getGoalViews,
@@ -897,6 +944,7 @@ window.BudgetCore = {
   clearArchivedAllocations
   ,
   updateTheme,
+  updateWishShelfRows,
   setAllocationVisibility,
   setAllocationVisibilityByKey,
   getAllocationVisibilityKey,

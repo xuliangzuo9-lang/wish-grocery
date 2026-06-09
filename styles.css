@@ -236,6 +236,8 @@ body::before {
   height: 320px;
   border-radius: 50%;
   background: radial-gradient(circle, var(--gold-soft), transparent 68%);
+  pointer-events: none;
+  z-index: 0;
 }
 
 .eyebrow,
@@ -312,6 +314,8 @@ body::before {
 .quote-card {
   margin-top: 18px;
   padding: 14px 16px;
+  position: relative;
+  z-index: 2;
 }
 
 .quote-card p {
@@ -569,13 +573,14 @@ body::before {
 }
 
 .theme-picker-input {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  inline-size: 1px;
-  block-size: 1px;
-  opacity: 0;
-  pointer-events: none;
+  width: 100%;
+  min-height: 38px;
+  padding: 4px;
+  border-radius: 14px;
+  border: 1px solid var(--panel-border);
+  background: rgba(255, 255, 255, 0.92);
+  opacity: 1;
+  pointer-events: auto;
 }
 
 .theme-popover-actions {
@@ -717,7 +722,7 @@ textarea {
 .slider-track {
   display: grid;
   grid-auto-flow: column;
-  grid-auto-columns: minmax(260px, 340px);
+  grid-auto-columns: minmax(220px, calc((100% - 64px) / 5));
   gap: 16px;
   overflow-x: auto;
   scroll-snap-type: x mandatory;
@@ -899,6 +904,71 @@ label span {
   gap: 18px;
 }
 
+.wish-shelf-board {
+  display: grid;
+  gap: 18px;
+}
+
+.wish-shelf-row {
+  display: grid;
+  gap: 10px;
+}
+
+.wish-shelf-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.wish-shelf-head strong {
+  font-size: 0.96rem;
+}
+
+.wish-shelf-tools,
+.shelf-row-controls {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.wish-shelf-select {
+  width: auto;
+  min-width: 120px;
+  padding-right: 32px;
+}
+
+.wish-shelf-track {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: minmax(220px, calc((100% - 64px) / 5));
+  gap: 16px;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  padding-bottom: 8px;
+  align-items: stretch;
+}
+
+.wish-shelf-track::-webkit-scrollbar {
+  height: 10px;
+}
+
+.wish-shelf-track::-webkit-scrollbar-thumb {
+  background: rgba(42, 35, 29, 0.18);
+  border-radius: 999px;
+}
+
+.image-upload-stack {
+  display: grid;
+  gap: 8px;
+}
+
+.image-upload-stack .form-hint {
+  margin: 0;
+}
+
 .goal-card {
   padding: 22px;
   background: var(--panel-strong);
@@ -944,6 +1014,56 @@ label span {
   display: block;
   margin-top: 8px;
   font-size: 1.08rem;
+}
+
+.detail-hero-card {
+  display: grid;
+  gap: 14px;
+}
+
+.detail-hero-card-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 16px;
+}
+
+.detail-hero-card-copy {
+  min-width: 0;
+}
+
+.detail-hero-card-copy h3 {
+  margin: 0 0 6px;
+}
+
+.detail-hero-visual {
+  min-height: 180px;
+  border-radius: 22px;
+  border: 1px solid var(--panel-border);
+  background: linear-gradient(135deg, rgba(var(--accent-rgb), 0.08), rgba(var(--gold-rgb), 0.12));
+  display: grid;
+  place-items: center;
+  font-size: clamp(2.4rem, 6vw, 4rem);
+  overflow: hidden;
+}
+
+.detail-hero-visual img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.empty-shelf-slot {
+  min-height: 180px;
+  border-radius: 22px;
+  border: 1px dashed var(--panel-border);
+  background: rgba(255, 252, 248, 0.72);
+  color: var(--ink-soft);
+  display: grid;
+  place-items: center;
+  text-align: center;
+  padding: 18px;
+  line-height: 1.7;
 }
 
 .goal-card-head {
@@ -1588,6 +1708,17 @@ label span {
 
   .quick-goal-form {
     grid-template-columns: 1fr;
+  }
+
+  .wish-shelf-track {
+    grid-auto-columns: minmax(240px, 88vw);
+  }
+
+  .wish-shelf-head,
+  .wish-shelf-tools,
+  .shelf-row-controls {
+    align-items: flex-start;
+    flex-direction: column;
   }
 
   .mobile-quick-goal-action {
