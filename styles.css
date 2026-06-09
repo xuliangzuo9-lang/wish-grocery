@@ -1092,6 +1092,10 @@ label span {
 
 .home-goal-topline {
   margin-bottom: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
 }
 
 .home-goal-card-main {
@@ -1348,10 +1352,48 @@ label span {
   position: relative;
   z-index: 1;
   padding: 22px;
+  min-height: 100%;
+  display: grid;
+  gap: 16px;
+  align-content: start;
 }
 
 .catalog-goal-card .goal-meta {
   background: rgba(255, 255, 255, 0.62);
+}
+
+.goal-card-head-side {
+  display: grid;
+  justify-items: end;
+  gap: 10px;
+}
+
+.goal-card-progress-ring {
+  width: 92px;
+  height: 92px;
+  font-size: 0.92rem;
+}
+
+.drag-handle-button {
+  min-width: 58px;
+  min-height: 34px;
+  border-radius: 999px;
+  background: rgba(255, 252, 248, 0.86);
+  border: 1px solid var(--panel-border);
+  color: var(--ink);
+  font: inherit;
+  font-size: 0.78rem;
+  cursor: grab;
+}
+
+.drag-handle-button:active {
+  cursor: grabbing;
+}
+
+.drag-handle-button.is-armed {
+  background: rgba(var(--accent-rgb), 0.16);
+  border-color: rgba(var(--accent-rgb), 0.36);
+  color: var(--accent-deep);
 }
 
 .goal-card.dragging {
@@ -1395,7 +1437,7 @@ label span {
   background-size: cover;
   background-repeat: no-repeat;
   opacity: 0;
-  transform: scale(1.03);
+  transform: scale(1.01);
   transition: opacity 220ms ease, transform 320ms ease;
 }
 
@@ -1536,11 +1578,11 @@ label span {
   background-size: cover;
   background-position: center;
   transform: scale(1.08);
-  filter: blur(0);
+  filter: blur(12px);
 }
 
 .detail-intro-card.has-photo .detail-intro-backdrop {
-  filter: blur(10px) saturate(0.95);
+  filter: blur(18px) saturate(0.95);
 }
 
 .detail-intro-overlay {
@@ -1658,6 +1700,13 @@ label span {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(42px, 1fr));
   gap: 8px;
+}
+
+.custom-icon-builder {
+  display: grid;
+  grid-template-columns: 0.7fr 1fr auto;
+  gap: 10px;
+  align-items: end;
 }
 
 .icon-picker-chip {
@@ -2427,6 +2476,20 @@ label span {
   .goal-progress-bar-box {
     min-width: 100%;
     justify-items: stretch;
+  }
+
+  .custom-icon-builder {
+    grid-template-columns: 1fr;
+  }
+
+  .goal-card-head-side {
+    justify-items: stretch;
+  }
+
+  .goal-card-progress-ring {
+    width: 84px;
+    height: 84px;
+    justify-self: end;
   }
 
   .detail-hero-single {

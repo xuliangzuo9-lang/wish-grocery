@@ -137,6 +137,17 @@
               <span>图标库</span>
               <div class="icon-picker-grid" id="goalIconPicker"></div>
             </div>
+            <div class="custom-icon-builder">
+              <label>
+                <span>自定义表情图标</span>
+                <input id="goalCustomIconValue" type="text" maxlength="4" placeholder="例如：🧥">
+              </label>
+              <label>
+                <span>图标含义</span>
+                <input id="goalCustomIconLabel" type="text" maxlength="12" placeholder="例如：新衣服">
+              </label>
+              <button class="ghost-button" id="goalAddCustomIcon" type="button">加入我的图库</button>
+            </div>
             <label>
               <span>愿望图片 URL</span>
               <input name="image" type="text" placeholder="可选：放一张代表这个愿望的图片链接">
@@ -200,6 +211,7 @@
     let editingGoalId = null;
     let editingGoalDraft = null;
     let draggedGoalId = null;
+    let pendingMoveGoalId = null;
 
     const activeGoalsGridEl = document.getElementById("activeGoalsGrid");
     const completedGoalsGridEl = document.getElementById("completedGoalsGrid");
@@ -215,6 +227,9 @@
     const goalIconPickerEl = document.getElementById("goalIconPicker");
     const themePopoverEl = document.getElementById("themePopover");
     const goalDeadlineBlockEl = document.getElementById("goalDeadlineBlock");
+    const goalCustomIconValueEl = document.getElementById("goalCustomIconValue");
+    const goalCustomIconLabelEl = document.getElementById("goalCustomIconLabel");
+    const goalAddCustomIconEl = document.getElementById("goalAddCustomIcon");
 
     const themeInputs = {
       accent: document.getElementById("themeAccent"),
@@ -313,6 +328,22 @@
     goalFormEl.elements.icon.addEventListener("input", syncGoalIconPicker);
     goalFormEl.elements.hasDeadline.addEventListener("change", syncGoalDeadlineVisibility);
 
+    goalAddCustomIconEl.addEventListener("click", () => {
+      const result = BudgetCore.addCustomGoalIcon(state, {
+        value: goalCustomIconValueEl.value,
+        label: goalCustomIconLabelEl.value
+      });
+      if (!result.ok) {
+        goalFormHintEl.textContent = "请先填写表情和它的含义。";
+        return;
+      }
+      state = BudgetCore.loadState();
+      goalCustomIconValueEl.value = "";
+      goalCustomIconLabelEl.value = "";
+      goalFormHintEl.textContent = "新的个性化图标已经加入你的图库。";
+      syncGoalIconPicker();
+    });
+
     cancelGoalEditButtonEl.addEventListener("click", () => {
       resetGoalForm();
     });
@@ -356,8 +387,28 @@
     });
 
     activeGoalsGridEl.addEventListener("click", (event) => {
+      const dragHandle = event.target.closest("[data-drag-handle]");
+      if (dragHandle) {
+        const goalId = dragHandle.dataset.goalId;
+        if (!goalId) {
+          return;
+        }
+        pendingMoveGoalId = pendingMoveGoalId === goalId ? null : goalId;
+        renderGoalsPage();
+        return;
+      }
+
       const button = event.target.closest("[data-action]");
       if (!button) {
+        const card = event.target.closest(".goal-card[data-goal-id]");
+        if (!card || event.target.closest("a, button, input, label, textarea, select")) {
+          return;
+        }
+        if (pendingMoveGoalId && pendingMoveGoalId !== card.dataset.goalId) {
+          moveGoalBeforeTarget(pendingMoveGoalId, card.dataset.goalId);
+          return;
+        }
+        window.location.href = `goal-detail.html?id=${encodeURIComponent(card.dataset.goalId)}`;
         return;
       }
       const goalId = button.dataset.goalId;
@@ -434,6 +485,10 @@
     completedGoalsGridEl.addEventListener("click", (event) => {
       const button = event.target.closest("[data-action]");
       if (!button) {
+        const card = event.target.closest(".goal-card[data-goal-id]");
+        if (card && !event.target.closest("a, button, input, label, textarea, select")) {
+          window.location.href = `goal-detail.html?id=${encodeURIComponent(card.dataset.goalId)}`;
+        }
         return;
       }
       const goalId = button.dataset.goalId;
@@ -505,7 +560,7 @@
 
     function renderIconPicker(container, input) {
       const currentValue = String(input.value || "").trim();
-      container.innerHTML = BudgetCore.getGoalIconLibrary().map((item) => `
+      container.innerHTML = BudgetCore.getGoalIconLibrary(state).map((item) => `
         <button class="icon-picker-chip ${currentValue === item.value ? "is-active" : ""}" type="button" data-icon-value="${BudgetCore.escapeHtml(item.value)}" title="${BudgetCore.escapeHtml(item.label)}" aria-label="选择${BudgetCore.escapeHtml(item.label)}图标">
           <span class="icon-picker-chip-icon">${BudgetCore.escapeHtml(item.value)}</span>
           <span class="icon-picker-chip-label">${BudgetCore.escapeHtml(item.label)}</span>
@@ -577,11 +632,9 @@
                   <small>${deadlineText}</small>
                   <span class="goal-state-pill">${mode === "completed" ? "已完成愿望" : (goal.isPinned ? "主页主要目标" : "普通愿望")}</span>
                 </div>
-                <div class="goal-progress-bar-box">
-                  <div class="goal-progress-bar-track">
-                    <div class="goal-progress-bar-fill" style="width:${percent}%; background:${goal.color};"></div>
-                  </div>
-                  <strong>${percent}%</strong>
+                <div class="goal-card-head-side">
+                  ${mode === "active" ? `<button class="drag-handle-button ${pendingMoveGoalId === goal.id ? "is-armed" : ""}" type="button" draggable="true" data-drag-handle data-goal-id="${goal.id}" title="拖动排序">拖动</button>` : ""}
+                  <div class="progress-ring goal-card-progress-ring" style="--progress:${percent * 3.6}deg; --goal-color:${goal.color};">${percent}%</div>
                 </div>
               </div>
               <div class="goal-finance">
@@ -734,10 +787,6 @@
 
     function bindDragAndDrop() {
       activeGoalsGridEl.querySelectorAll(".goal-card").forEach((card) => {
-        card.addEventListener("dragstart", () => {
-          draggedGoalId = card.dataset.goalId;
-          card.classList.add("dragging");
-        });
         card.addEventListener("dragend", () => {
           draggedGoalId = null;
           card.classList.remove("dragging");
@@ -756,16 +805,34 @@
           if (!draggedGoalId || draggedGoalId === card.dataset.goalId) {
             return;
           }
-          const activeGoals = getRenderableActiveGoals();
-          const targetIndex = activeGoals.findIndex((item) => item.id === card.dataset.goalId);
-          if (targetIndex < 0) {
-            return;
-          }
-          BudgetCore.moveGoalToIndex(state, draggedGoalId, targetIndex);
-          state = BudgetCore.loadState();
-          renderGoalsPage();
+          moveGoalBeforeTarget(draggedGoalId, card.dataset.goalId);
         });
       });
+
+      activeGoalsGridEl.querySelectorAll("[data-drag-handle]").forEach((handle) => {
+        handle.addEventListener("dragstart", (event) => {
+          event.stopPropagation();
+          draggedGoalId = handle.dataset.goalId;
+          pendingMoveGoalId = null;
+          handle.closest(".goal-card")?.classList.add("dragging");
+        });
+        handle.addEventListener("dragend", () => {
+          draggedGoalId = null;
+          handle.closest(".goal-card")?.classList.remove("dragging");
+        });
+      });
+    }
+
+    function moveGoalBeforeTarget(sourceGoalId, targetGoalId) {
+      const activeGoals = getRenderableActiveGoals();
+      const targetIndex = activeGoals.findIndex((item) => item.id === targetGoalId);
+      if (targetIndex < 0) {
+        return;
+      }
+      BudgetCore.moveGoalToIndex(state, sourceGoalId, targetIndex);
+      state = BudgetCore.loadState();
+      pendingMoveGoalId = null;
+      renderGoalsPage();
     }
 
     function syncThemeInputs() {

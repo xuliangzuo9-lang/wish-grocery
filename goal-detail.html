@@ -102,6 +102,17 @@
                 <span>图标库</span>
                 <div class="icon-picker-grid" id="detailGoalIconPicker"></div>
               </div>
+              <div class="custom-icon-builder">
+                <label>
+                  <span>自定义表情图标</span>
+                  <input id="detailCustomIconValue" type="text" maxlength="4" placeholder="例如：🧥">
+                </label>
+                <label>
+                  <span>图标含义</span>
+                  <input id="detailCustomIconLabel" type="text" maxlength="12" placeholder="例如：新衣服">
+                </label>
+                <button class="ghost-button" id="detailAddCustomIcon" type="button">加入我的图库</button>
+              </div>
               <label>
                 <span>目标图片 URL</span>
                 <input name="image" type="text" placeholder="可选：放一张代表这个愿望的图片链接">
@@ -192,6 +203,9 @@
     const detailIntroBackdropEl = document.getElementById("detailIntroBackdrop");
     const detailIntroTextEl = document.getElementById("detailIntroText");
     const detailDeadlineBlockEl = document.getElementById("detailDeadlineBlock");
+    const detailCustomIconValueEl = document.getElementById("detailCustomIconValue");
+    const detailCustomIconLabelEl = document.getElementById("detailCustomIconLabel");
+    const detailAddCustomIconEl = document.getElementById("detailAddCustomIcon");
 
     function getGoalView() {
       return BudgetCore.getGoalById(state, goalId);
@@ -255,7 +269,7 @@
 
     function renderIconPicker() {
       const currentValue = String(formEl.elements.icon.value || "").trim();
-      detailGoalIconPickerEl.innerHTML = BudgetCore.getGoalIconLibrary().map((item) => `
+      detailGoalIconPickerEl.innerHTML = BudgetCore.getGoalIconLibrary(state).map((item) => `
         <button class="icon-picker-chip ${currentValue === item.value ? "is-active" : ""}" type="button" data-icon-value="${BudgetCore.escapeHtml(item.value)}" title="${BudgetCore.escapeHtml(item.label)}" aria-label="选择${BudgetCore.escapeHtml(item.label)}图标">
           ${BudgetCore.escapeHtml(item.value)}
         </button>
@@ -362,6 +376,20 @@
       syncDraftFromForm();
       renderIconPicker();
       renderDetail();
+    });
+
+    detailAddCustomIconEl.addEventListener("click", () => {
+      const result = BudgetCore.addCustomGoalIcon(state, {
+        value: detailCustomIconValueEl.value,
+        label: detailCustomIconLabelEl.value
+      });
+      if (!result.ok) {
+        return;
+      }
+      state = BudgetCore.loadState();
+      detailCustomIconValueEl.value = "";
+      detailCustomIconLabelEl.value = "";
+      renderIconPicker();
     });
 
     detailGoalImageFileEl.addEventListener("change", async () => {

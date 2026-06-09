@@ -150,6 +150,17 @@
               <span>图标库</span>
               <div class="icon-picker-grid" id="quickGoalIconPicker"></div>
             </div>
+            <div class="custom-icon-builder quick-goal-form-full">
+              <label>
+                <span>自定义表情图标</span>
+                <input id="quickCustomIconValue" type="text" maxlength="4" placeholder="例如：🧥">
+              </label>
+              <label>
+                <span>图标含义</span>
+                <input id="quickCustomIconLabel" type="text" maxlength="12" placeholder="例如：新衣服">
+              </label>
+              <button class="ghost-button" id="quickAddCustomIcon" type="button">加入我的图库</button>
+            </div>
 
             <label class="quick-goal-form-full">
               <span>愿望图片 URL</span>
@@ -204,6 +215,7 @@
     let state = BudgetCore.loadState();
     let draggedGoalId = null;
     let currentQuoteText = "";
+    let pendingMoveGoalId = null;
 
     const themePopoverEl = document.getElementById("themePopover");
     const quoteTextEl = document.getElementById("quoteText");
@@ -218,6 +230,9 @@
     const quickGoalShelfSelectEl = document.getElementById("quickGoalShelfSelect");
     const quickGoalIconPickerEl = document.getElementById("quickGoalIconPicker");
     const quickGoalDeadlineBlockEl = document.getElementById("quickGoalDeadlineBlock");
+    const quickCustomIconValueEl = document.getElementById("quickCustomIconValue");
+    const quickCustomIconLabelEl = document.getElementById("quickCustomIconLabel");
+    const quickAddCustomIconEl = document.getElementById("quickAddCustomIcon");
 
     const themeInputs = {
       accent: document.getElementById("themeAccent"),
@@ -293,6 +308,22 @@
     quickGoalFormEl.elements.icon.addEventListener("input", renderQuickGoalIconPicker);
     quickGoalFormEl.elements.hasDeadline.addEventListener("change", syncQuickGoalDeadlineVisibility);
 
+    quickAddCustomIconEl.addEventListener("click", () => {
+      const result = BudgetCore.addCustomGoalIcon(state, {
+        value: quickCustomIconValueEl.value,
+        label: quickCustomIconLabelEl.value
+      });
+      if (!result.ok) {
+        quickGoalHintEl.textContent = "请先填写表情和它的含义。";
+        return;
+      }
+      state = BudgetCore.loadState();
+      quickGoalHintEl.textContent = "新的个性化图标已经加入你的图库。";
+      quickCustomIconValueEl.value = "";
+      quickCustomIconLabelEl.value = "";
+      renderQuickGoalIconPicker();
+    });
+
     quickGoalImageFileEl.addEventListener("change", async () => {
       const file = quickGoalImageFileEl.files?.[0];
       if (!file) {
@@ -356,6 +387,10 @@
 
       const card = event.target.closest(".home-goal-card");
       if (!card) {
+        return;
+      }
+      if (pendingMoveGoalId && pendingMoveGoalId !== card.dataset.goalId) {
+        moveGoalBeforeTarget(pendingMoveGoalId, card.dataset.goalId);
         return;
       }
       if (event.target.closest("button, a, input, select, textarea, label")) {
@@ -446,7 +481,7 @@
 
     function renderQuickGoalIconPicker() {
       const currentValue = String(quickGoalFormEl.elements.icon.value || "").trim();
-      quickGoalIconPickerEl.innerHTML = BudgetCore.getGoalIconLibrary().map((item) => `
+      quickGoalIconPickerEl.innerHTML = BudgetCore.getGoalIconLibrary(state).map((item) => `
         <button class="icon-picker-chip ${currentValue === item.value ? "is-active" : ""}" type="button" data-icon-value="${BudgetCore.escapeHtml(item.value)}" title="${BudgetCore.escapeHtml(item.label)}" aria-label="选择${BudgetCore.escapeHtml(item.label)}图标">
           <span class="icon-picker-chip-icon">${BudgetCore.escapeHtml(item.value)}</span>
           <span class="icon-picker-chip-label">${BudgetCore.escapeHtml(item.label)}</span>
@@ -548,6 +583,7 @@
         <article class="goal-card home-goal-card ${goal.image ? "has-photo" : ""}" draggable="true" data-goal-id="${goal.id}" data-shelf-id="${goal.shelfId}" style="--goal-color:${goal.color};${backgroundStyle}">
           <div class="home-goal-topline">
             <span class="slider-sort-chip">${BudgetCore.escapeHtml(goal.shelf?.name || "愿望货架")}</span>
+            <button class="drag-handle-button ${pendingMoveGoalId === goal.id ? "is-armed" : ""}" type="button" draggable="true" data-drag-handle data-goal-id="${goal.id}" title="拖动排序">拖动</button>
           </div>
           <div class="home-goal-card-main">
             <div class="home-goal-icon-chip">
@@ -592,11 +628,6 @@
     function bindDragAndDrop() {
       const cards = document.querySelectorAll(".home-goal-card, .main-target-tile[data-goal-id]");
       cards.forEach((card) => {
-        card.addEventListener("dragstart", () => {
-          draggedGoalId = card.dataset.goalId;
-          card.classList.add("dragging");
-        });
-
         card.addEventListener("dragend", () => {
           draggedGoalId = null;
           card.classList.remove("dragging");
@@ -619,26 +650,31 @@
           if (!draggedGoalId || !targetGoalId || draggedGoalId === targetGoalId) {
             return;
           }
+          moveGoalBeforeTarget(draggedGoalId, targetGoalId);
+        });
+      });
 
-          const targetGoal = BudgetCore.getGoalById(state, targetGoalId);
-          const draggedGoal = BudgetCore.getGoalById(state, draggedGoalId);
-          if (!targetGoal || !draggedGoal) {
+      document.querySelectorAll("[data-drag-handle]").forEach((handle) => {
+        handle.addEventListener("click", (event) => {
+          event.stopPropagation();
+          const goalId = handle.dataset.goalId;
+          if (!goalId) {
             return;
           }
-
-          if (draggedGoal.shelfId !== targetGoal.shelfId) {
-            BudgetCore.assignGoalToShelf(state, draggedGoalId, targetGoal.shelfId);
-            state = BudgetCore.loadState();
-          }
-
-          const activeGoals = BudgetCore.getActiveGoals(state);
-          const targetIndex = activeGoals.findIndex((item) => item.id === targetGoalId);
-          if (targetIndex < 0) {
-            return;
-          }
-          BudgetCore.moveGoalToIndex(state, draggedGoalId, targetIndex);
-          state = BudgetCore.loadState();
+          pendingMoveGoalId = pendingMoveGoalId === goalId ? null : goalId;
           renderHome();
+        });
+        handle.addEventListener("dragstart", (event) => {
+          event.stopPropagation();
+          draggedGoalId = handle.dataset.goalId;
+          pendingMoveGoalId = null;
+          const card = handle.closest(".home-goal-card, .main-target-tile");
+          card?.classList.add("dragging");
+        });
+        handle.addEventListener("dragend", () => {
+          draggedGoalId = null;
+          const card = handle.closest(".home-goal-card, .main-target-tile");
+          card?.classList.remove("dragging");
         });
       });
 
@@ -661,9 +697,31 @@
           }
           BudgetCore.assignGoalToShelf(state, draggedGoalId, shelfId);
           state = BudgetCore.loadState();
+          pendingMoveGoalId = null;
           renderHome();
         });
       });
+    }
+
+    function moveGoalBeforeTarget(sourceGoalId, targetGoalId) {
+      const targetGoal = BudgetCore.getGoalById(state, targetGoalId);
+      const sourceGoal = BudgetCore.getGoalById(state, sourceGoalId);
+      if (!targetGoal || !sourceGoal) {
+        return;
+      }
+      if (sourceGoal.shelfId !== targetGoal.shelfId) {
+        BudgetCore.assignGoalToShelf(state, sourceGoalId, targetGoal.shelfId);
+        state = BudgetCore.loadState();
+      }
+      const activeGoals = BudgetCore.getActiveGoals(state);
+      const targetIndex = activeGoals.findIndex((item) => item.id === targetGoalId);
+      if (targetIndex < 0) {
+        return;
+      }
+      BudgetCore.moveGoalToIndex(state, sourceGoalId, targetIndex);
+      state = BudgetCore.loadState();
+      pendingMoveGoalId = null;
+      renderHome();
     }
 
     function syncThemeInputs() {

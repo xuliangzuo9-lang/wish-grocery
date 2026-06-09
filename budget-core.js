@@ -94,6 +94,27 @@ const goalIconLibrary = [
   { value: "📱", label: "手机" },
   { value: "🎯", label: "目标" }
 ];
+
+function normalizeCustomGoalIcons(rawIcons) {
+  if (!Array.isArray(rawIcons)) {
+    return [];
+  }
+  const seen = new Set();
+  return rawIcons
+    .map((icon) => ({
+      value: String(icon?.value || "").trim(),
+      label: String(icon?.label || "").trim()
+    }))
+    .filter((icon) => icon.value && icon.label)
+    .filter((icon) => {
+      const key = `${icon.value}::${icon.label}`;
+      if (seen.has(key)) {
+        return false;
+      }
+      seen.add(key);
+      return true;
+    });
+}
 const categoryColors = {
   "生活费": "#487a72",
   "备用金": "#d5a95a",
@@ -190,6 +211,7 @@ const seedState = {
       bgStart: "#f6efe7",
       bgEnd: "#efe4d7"
     },
+    customGoalIcons: [],
     allocationItemVisibility: {}
   }
 };
@@ -291,6 +313,7 @@ function normalizeState(raw) {
         bgStart: raw.ui?.theme?.bgStart ?? fallback.ui.theme.bgStart,
         bgEnd: raw.ui?.theme?.bgEnd ?? fallback.ui.theme.bgEnd
       },
+      customGoalIcons: normalizeCustomGoalIcons(raw.ui?.customGoalIcons ?? fallback.ui.customGoalIcons),
       allocationItemVisibility: raw.ui?.allocationItemVisibility ?? {}
     }
   };
@@ -543,8 +566,36 @@ function getMotivationalQuotes() {
   return motivationalQuotes.map((quote) => ({ ...quote }));
 }
 
-function getGoalIconLibrary() {
-  return goalIconLibrary.map((icon) => ({ ...icon }));
+function getGoalIconLibrary(state = loadState()) {
+  const customIcons = normalizeCustomGoalIcons(state?.ui?.customGoalIcons);
+  const merged = [...goalIconLibrary.map((icon) => ({ ...icon })), ...customIcons];
+  const seen = new Set();
+  return merged.filter((icon) => {
+    const key = `${icon.value}::${icon.label}`;
+    if (seen.has(key)) {
+      return false;
+    }
+    seen.add(key);
+    return true;
+  });
+}
+
+function addCustomGoalIcon(state, payload) {
+  const value = String(payload?.value || "").trim();
+  const label = String(payload?.label || "").trim();
+  if (!value || !label) {
+    return { ok: false, reason: "invalid" };
+  }
+  if (!state.ui) {
+    state.ui = {};
+  }
+  const icons = normalizeCustomGoalIcons(state.ui.customGoalIcons);
+  if (!icons.some((icon) => icon.value === value && icon.label === label)) {
+    icons.unshift({ value, label });
+  }
+  state.ui.customGoalIcons = normalizeCustomGoalIcons(icons);
+  saveState(state);
+  return { ok: true };
 }
 
 function getPinnedGoalCount(state) {
@@ -1078,6 +1129,7 @@ window.BudgetCore = {
   getRandomQuote,
   getMotivationalQuotes,
   getGoalIconLibrary,
+  addCustomGoalIcon,
   getPinnedGoalCount,
   togglePinnedGoal,
   getGoalViews,
