@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>愿望杂货铺 | 管理后台</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="page-shell">
+    <nav class="site-nav">
+      <div class="brand-mark">
+        <strong>愿望杂货铺</strong>
+        <span>管理员在这里审核注册申请并查看所有用户</span>
+      </div>
+      <div class="nav-links">
+        <a class="nav-link" href="index.html">主页</a>
+        <a class="nav-link active" href="admin.html">管理后台</a>
+        <a class="nav-link" href="auth.html">登录页</a>
+      </div>
+      <div class="nav-utilities">
+        <button class="ghost-button small" id="refreshUsersButton" type="button">刷新列表</button>
+        <button class="ghost-button small" id="logoutButton" type="button">退出登录</button>
+      </div>
+    </nav>
+
+    <main class="dashboard dashboard-tight">
+      <section class="panel reveal panel-tight">
+        <div class="section-head compact">
+          <div>
+            <p class="section-kicker">Admin overview</p>
+            <h1>注册审核后台</h1>
+            <p class="page-intro page-intro-compact" id="adminSummary">正在读取用户列表…</p>
+          </div>
+        </div>
+      </section>
+
+      <section class="split-layout admin-layout">
+        <section class="panel reveal panel-tight">
+          <div class="section-head compact">
+            <div>
+              <p class="section-kicker">Pending</p>
+              <h2>待审核申请</h2>
+            </div>
+          </div>
+          <div class="records-list" id="pendingUsersList"></div>
+        </section>
+
+        <section class="panel reveal panel-tight">
+          <div class="section-head compact">
+            <div>
+              <p class="section-kicker">Approved</p>
+              <h2>已通过用户</h2>
+            </div>
+          </div>
+          <div class="records-list" id="approvedUsersList"></div>
+        </section>
+      </section>
+
+      <section class="panel reveal panel-tight">
+        <div class="section-head compact">
+          <div>
+            <p class="section-kicker">Rejected</p>
+            <h2>未通过用户</h2>
+          </div>
+        </div>
+        <div class="records-list" id="rejectedUsersList"></div>
+      </section>
+
+      <section class="panel reveal panel-tight">
+        <div class="section-head compact">
+          <div>
+            <p class="section-kicker">Security</p>
+            <h2>修改管理员密码</h2>
+            <p class="page-intro page-intro-compact">如果你准备把网站发到公网，建议先把默认管理员密码改掉。</p>
+          </div>
+        </div>
+        <form class="stack-form" id="passwordForm">
+          <label>
+            <span>当前密码</span>
+            <input name="currentPassword" type="password" required>
+          </label>
+          <label>
+            <span>新密码</span>
+            <input name="newPassword" type="password" minlength="8" required>
+          </label>
+          <div class="form-actions">
+            <button class="solid-button" type="submit">保存新密码</button>
+          </div>
+          <p class="form-hint" id="passwordFeedback">默认管理员账号是 `admin`，建议尽快替换默认密码。</p>
+        </form>
+      </section>
+    </main>
+  </div>
+
+  <script>
+    const adminSummaryEl = document.getElementById("adminSummary");
+    const pendingUsersListEl = document.getElementById("pendingUsersList");
+    const approvedUsersListEl = document.getElementById("approvedUsersList");
+    const rejectedUsersListEl = document.getElementById("rejectedUsersList");
+    const passwordFormEl = document.getElementById("passwordForm");
+    const passwordFeedbackEl = document.getElementById("passwordFeedback");
+
+    document.getElementById("refreshUsersButton").addEventListener("click", () => {
+      loadUsers();
+    });
+
+    document.getElementById("logoutButton").addEventListener("click", async () => {
+      await fetch("/api/logout", { method: "POST" });
+      window.location.href = "auth.html";
+    });
+
+    passwordFormEl.addEventListener("submit", async (event) => {
+      event.preventDefault();
+      passwordFeedbackEl.textContent = "正在更新密码…";
+      const payload = {
+        currentPassword: passwordFormEl.elements.currentPassword.value,
+        newPassword: passwordFormEl.elements.newPassword.value
+      };
+      const response = await fetch("/api/admin/change-password", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload)
+      });
+      const result = await response.json();
+      passwordFeedbackEl.textContent = result.message || (response.ok ? "修改完成。" : "修改失败。");
+      if (response.ok && result.ok) {
+        passwordFormEl.reset();
+      }
+    });
+
+    pendingUsersListEl.addEventListener("click", handleAdminAction);
+    approvedUsersListEl.addEventListener("click", handleAdminAction);
+    rejectedUsersListEl.addEventListener("click", handleAdminAction);
+
+    async function handleAdminAction(event) {
+      const button = event.target.closest("[data-admin-action]");
+      if (!button) {
+        return;
+      }
+
+      const userId = button.dataset.userId;
+      const action = button.dataset.adminAction;
+      if (!userId || !action) {
+        return;
+      }
+
+      button.disabled = true;
+      const response = await fetch(`/api/admin/users/${encodeURIComponent(userId)}/${action}`, {
+        method: "POST"
+      });
+      const result = await response.json();
+      if (!response.ok || !result.ok) {
+        window.alert(result.message || "操作失败，请重试。");
+        button.disabled = false;
+        return;
+      }
+      await loadUsers();
+    }
+
+    function renderUserCard(user, mode) {
+      const actionMarkup = mode === "pending"
+        ? `
+            <button class="goal-action-button secondary" data-admin-action="approve" data-user-id="${user.id}" type="button">通过</button>
+            <button class="goal-action-button danger" data-admin-action="reject" data-user-id="${user.id}" type="button">拒绝</button>
+          `
+        : mode === "rejected"
+          ? `<button class="goal-action-button secondary" data-admin-action="approve" data-user-id="${user.id}" type="button">改为通过</button>`
+          : "";
+
+      return `
+        <article class="record-item admin-user-card">
+          <div class="record-top">
+            <div>
+              <h3>${escapeHtml(user.displayName)} <span class="admin-user-role">${escapeHtml(user.role)}</span></h3>
+              <div class="chip-row">
+                <span class="allocation-chip">@${escapeHtml(user.username)}</span>
+                <span class="allocation-chip">状态：${escapeHtml(user.status)}</span>
+                <span class="allocation-chip">申请时间：${formatDateTime(user.createdAt)}</span>
+              </div>
+            </div>
+            <div class="archive-manager-actions">
+              ${actionMarkup}
+            </div>
+          </div>
+          ${user.note ? `<p class="record-note">申请备注：${escapeHtml(user.note)}</p>` : ""}
+          ${user.approvedAt ? `<p class="record-note">通过时间：${formatDateTime(user.approvedAt)}，操作人：${escapeHtml(user.approvedBy || "-")}</p>` : ""}
+          ${user.rejectedAt ? `<p class="record-note">拒绝时间：${formatDateTime(user.rejectedAt)}，操作人：${escapeHtml(user.rejectedBy || "-")}</p>` : ""}
+        </article>
+      `;
+    }
+
+    function escapeHtml(value) {
+      return String(value || "")
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#39;");
+    }
+
+    function formatDateTime(value) {
+      if (!value) {
+        return "-";
+      }
+      return new Intl.DateTimeFormat("zh-CN", {
+        year: "numeric",
+        month: "2-digit",
+        day: "2-digit",
+        hour: "2-digit",
+        minute: "2-digit"
+      }).format(new Date(value));
+    }
+
+    async function loadUsers() {
+      adminSummaryEl.textContent = "正在读取用户列表…";
+      const response = await fetch("/api/admin/users");
+      const result = await response.json();
+      if (!response.ok || !result.ok) {
+        adminSummaryEl.textContent = result.message || "读取失败。";
+        return;
+      }
+
+      const users = result.users || [];
+      const pending = users.filter((user) => user.role !== "admin" && user.status === "pending");
+      const approved = users.filter((user) => user.status === "approved");
+      const rejected = users.filter((user) => user.role !== "admin" && user.status === "rejected");
+
+      adminSummaryEl.textContent = `当前共有 ${users.length} 个账号，其中待审核 ${pending.length} 个，已通过 ${approved.length} 个。`;
+      pendingUsersListEl.innerHTML = pending.length
+        ? pending.map((user) => renderUserCard(user, "pending")).join("")
+        : `<div class="empty-state">现在没有待审核的新申请。</div>`;
+      approvedUsersListEl.innerHTML = approved.length
+        ? approved.map((user) => renderUserCard(user, "approved")).join("")
+        : `<div class="empty-state">还没有已通过的用户。</div>`;
+      rejectedUsersListEl.innerHTML = rejected.length
+        ? rejected.map((user) => renderUserCard(user, "rejected")).join("")
+        : `<div class="empty-state">还没有被拒绝的申请。</div>`;
+    }
+
+    loadUsers();
+  </script>
+</body>
+</html>

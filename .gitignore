@@ -1,0 +1,6 @@
+data/site-store.json
+.localtunnel.log
+.localtunnel.err.log
+.cloudflared.log
+.cloudflared.err.log
+node_modules/

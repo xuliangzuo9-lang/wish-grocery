@@ -1,0 +1,576 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>愿望杂货铺 | 主页</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="page-shell">
+    <nav class="site-nav">
+      <div class="brand-mark">
+        <strong>愿望杂货铺</strong>
+        <span>把攒钱、分配和愿望推进放进同一个小仪表盘里</span>
+      </div>
+      <div class="nav-links">
+        <a class="nav-link active" href="index.html">主页</a>
+        <a class="nav-link" href="goals.html">愿望管理</a>
+        <a class="nav-link" href="records.html">收入记录</a>
+      </div>
+      <div class="nav-utilities">
+        <a class="ghost-button small" id="adminEntryButton" href="admin.html" hidden>管理员后台</a>
+        <button class="ghost-button small" id="toggleThemePanel" type="button">主题颜色</button>
+        <section class="theme-popover theme-popover-compact" id="themePopover" hidden>
+          <div class="theme-popover-head">
+            <strong>主页配色</strong>
+            <button class="ghost-button small" id="closeThemePanel" type="button">收起</button>
+          </div>
+          <p class="muted theme-popover-copy">颜色选择器缩小了，整体也会自动走更柔和的表现，不会只剩按钮在变色。</p>
+          <div class="theme-swatch-grid">
+            <div class="theme-swatch-field">
+              <span>主色</span>
+              <button class="theme-swatch-button" type="button" data-theme-trigger="accent">
+                <span class="theme-swatch-dot" id="previewHomeThemeAccent"></span>
+              </button>
+              <input id="homeThemeAccent" class="theme-picker-input" type="color">
+            </div>
+            <div class="theme-swatch-field">
+              <span>深主色</span>
+              <button class="theme-swatch-button" type="button" data-theme-trigger="accentDeep">
+                <span class="theme-swatch-dot" id="previewHomeThemeAccentDeep"></span>
+              </button>
+              <input id="homeThemeAccentDeep" class="theme-picker-input" type="color">
+            </div>
+            <div class="theme-swatch-field">
+              <span>点缀色</span>
+              <button class="theme-swatch-button" type="button" data-theme-trigger="gold">
+                <span class="theme-swatch-dot" id="previewHomeThemeGold"></span>
+              </button>
+              <input id="homeThemeGold" class="theme-picker-input" type="color">
+            </div>
+            <div class="theme-swatch-field">
+              <span>背景起点</span>
+              <button class="theme-swatch-button" type="button" data-theme-trigger="bgStart">
+                <span class="theme-swatch-dot" id="previewHomeThemeBgStart"></span>
+              </button>
+              <input id="homeThemeBgStart" class="theme-picker-input" type="color">
+            </div>
+            <div class="theme-swatch-field">
+              <span>背景终点</span>
+              <button class="theme-swatch-button" type="button" data-theme-trigger="bgEnd">
+                <span class="theme-swatch-dot" id="previewHomeThemeBgEnd"></span>
+              </button>
+              <input id="homeThemeBgEnd" class="theme-picker-input" type="color">
+            </div>
+          </div>
+          <div class="theme-popover-actions">
+            <button class="ghost-button small" id="applySoftTheme" type="button">恢复柔和默认</button>
+          </div>
+        </section>
+      </div>
+    </nav>
+
+    <header class="hero hero-compact hero-super-compact reveal">
+      <div class="hero-copy">
+        <p class="eyebrow">Home focus</p>
+        <h1>先看最想实现的三个愿望</h1>
+        <p class="hero-text hero-text-compact">主页只保留最重要的内容，打开就能看到进度、差额和下一步。</p>
+      </div>
+      <div class="quote-card quote-inline quote-inline-compact">
+        <div class="quote-card-head">
+          <strong>今日激励</strong>
+          <button class="ghost-button small" id="refreshQuoteButton" type="button">换一句</button>
+        </div>
+        <p id="heroQuoteText">今天的每一笔克制，都会把你再送近一点。</p>
+        <footer id="heroQuoteAuthor">愿望杂货铺</footer>
+      </div>
+    </header>
+
+    <main class="dashboard dashboard-tight">
+      <section class="panel reveal panel-tight">
+        <div class="section-head compact">
+          <div>
+            <p class="section-kicker">Main goals</p>
+            <h2>主要目标</h2>
+            <p class="muted compact-note-inline" id="heroGoalCountLabel">0 / 3 已置顶</p>
+          </div>
+          <div class="section-actions">
+            <a class="ghost-button small" href="goals.html">去管理主要目标</a>
+          </div>
+        </div>
+        <div class="hero-priority-grid compact-grid" id="heroPriorityGrid"></div>
+      </section>
+
+      <section class="panel reveal panel-tight">
+        <div class="section-head compact">
+          <div>
+            <p class="section-kicker">Wish board</p>
+            <h2>愿望进度板</h2>
+            <p class="muted compact-note-inline">左右滑动看全部愿望，也可以直接拖动卡片调整展示顺序。</p>
+          </div>
+          <div class="section-actions">
+            <a class="ghost-button small" href="goals.html">查看全部愿望</a>
+            <a class="ghost-button small" href="records.html">查看收入记录</a>
+          </div>
+        </div>
+        <div class="slider-shell">
+          <div class="slider-toolbar">
+            <p class="muted">点击卡片直接进入详情页继续修改。</p>
+            <div class="section-actions">
+              <button class="ghost-button small" id="scrollSliderPrev" type="button">向左看</button>
+              <button class="ghost-button small" id="scrollSliderNext" type="button">向右看</button>
+            </div>
+          </div>
+          <div class="slider-track" id="homeGoalSlider"></div>
+        </div>
+      </section>
+
+      <section class="hero-mini-metrics reveal hero-mini-metrics-compact">
+        <div class="compact-panel">
+          <span>活跃愿望</span>
+          <strong id="heroGoalCount">0</strong>
+        </div>
+        <div class="compact-panel">
+          <span>收入记录</span>
+          <strong id="heroIncomeCount">0</strong>
+        </div>
+        <div class="compact-panel">
+          <span>累计收入</span>
+          <strong id="compactTotalIncome">0 元</strong>
+        </div>
+        <div class="compact-panel">
+          <span>进入愿望的钱</span>
+          <strong id="compactGoalMoney">0 元</strong>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <script src="budget-core.js"></script>
+  <script>
+    const SOFT_THEME = {
+      accent: "#c68d74",
+      accentDeep: "#8f6658",
+      gold: "#c8a36a",
+      bgStart: "#f7f1ea",
+      bgEnd: "#ecdfd2"
+    };
+
+    let state = BudgetCore.loadState();
+    let draggedPinnedGoalId = null;
+    let draggedSliderGoalId = null;
+
+    const priorityGridEl = document.getElementById("heroPriorityGrid");
+    const sliderTrackEl = document.getElementById("homeGoalSlider");
+    const heroGoalCountLabelEl = document.getElementById("heroGoalCountLabel");
+    const themePopoverEl = document.getElementById("themePopover");
+    const adminEntryButtonEl = document.getElementById("adminEntryButton");
+    const quoteTextEl = document.getElementById("heroQuoteText");
+    const quoteAuthorEl = document.getElementById("heroQuoteAuthor");
+    const themeInputs = {
+      accent: document.getElementById("homeThemeAccent"),
+      accentDeep: document.getElementById("homeThemeAccentDeep"),
+      gold: document.getElementById("homeThemeGold"),
+      bgStart: document.getElementById("homeThemeBgStart"),
+      bgEnd: document.getElementById("homeThemeBgEnd")
+    };
+    const themePreviewDots = {
+      accent: document.getElementById("previewHomeThemeAccent"),
+      accentDeep: document.getElementById("previewHomeThemeAccentDeep"),
+      gold: document.getElementById("previewHomeThemeGold"),
+      bgStart: document.getElementById("previewHomeThemeBgStart"),
+      bgEnd: document.getElementById("previewHomeThemeBgEnd")
+    };
+
+    document.getElementById("scrollSliderPrev").addEventListener("click", () => {
+      sliderTrackEl.scrollBy({ left: -320, behavior: "smooth" });
+    });
+
+    document.getElementById("scrollSliderNext").addEventListener("click", () => {
+      sliderTrackEl.scrollBy({ left: 320, behavior: "smooth" });
+    });
+
+    document.getElementById("toggleThemePanel").addEventListener("click", () => {
+      themePopoverEl.hidden = !themePopoverEl.hidden;
+    });
+
+    document.getElementById("closeThemePanel").addEventListener("click", () => {
+      themePopoverEl.hidden = true;
+    });
+
+    document.getElementById("applySoftTheme").addEventListener("click", () => {
+      BudgetCore.updateTheme(state, SOFT_THEME);
+      state = BudgetCore.loadState();
+      syncThemeInputs();
+      BudgetCore.applyTheme(state.ui.theme);
+    });
+
+    document.getElementById("refreshQuoteButton").addEventListener("click", () => {
+      renderQuote(true);
+    });
+
+    document.addEventListener("click", (event) => {
+      const withinThemePanel = event.target.closest(".nav-utilities");
+      if (!withinThemePanel) {
+        themePopoverEl.hidden = true;
+      }
+    });
+
+    document.querySelectorAll("[data-theme-trigger]").forEach((button) => {
+      button.addEventListener("click", () => {
+        const key = button.dataset.themeTrigger;
+        const input = themeInputs[key];
+        if (input) {
+          input.click();
+        }
+      });
+    });
+
+    Object.entries(themeInputs).forEach(([key, input]) => {
+      input.addEventListener("input", () => {
+        themePreviewDots[key].style.setProperty("--swatch-color", input.value);
+        BudgetCore.updateTheme(state, {
+          accent: themeInputs.accent.value,
+          accentDeep: themeInputs.accentDeep.value,
+          gold: themeInputs.gold.value,
+          bgStart: themeInputs.bgStart.value,
+          bgEnd: themeInputs.bgEnd.value
+        });
+        state = BudgetCore.loadState();
+        BudgetCore.applyTheme(state.ui.theme);
+      });
+    });
+
+    priorityGridEl.addEventListener("click", (event) => {
+      const button = event.target.closest("[data-home-action]");
+      if (!button) {
+        return;
+      }
+
+      const goalId = button.dataset.goalId;
+      const action = button.dataset.homeAction;
+      if (!goalId || !action) {
+        return;
+      }
+
+      const activeGoals = getActiveGoalViews();
+      const pinnedGoals = activeGoals.filter((goal) => goal.isPinned).slice(0, BudgetCore.MAX_PINNED_GOALS);
+      const currentIndex = pinnedGoals.findIndex((goal) => goal.id === goalId);
+      const nextIndex = action === "move-left" ? currentIndex - 1 : currentIndex + 1;
+      const targetPinnedGoal = pinnedGoals[nextIndex];
+      if (!targetPinnedGoal) {
+        return;
+      }
+
+      const targetActiveIndex = activeGoals.findIndex((goal) => goal.id === targetPinnedGoal.id);
+      BudgetCore.moveGoalToIndex(state, goalId, targetActiveIndex);
+      state = BudgetCore.loadState();
+      renderHomePage();
+    });
+
+    priorityGridEl.addEventListener("dragstart", (event) => {
+      const handle = event.target.closest("[data-drag-handle]");
+      const card = handle?.closest(".priority-card[data-goal-id]");
+      if (!card) {
+        return;
+      }
+      draggedPinnedGoalId = card.dataset.goalId;
+      event.dataTransfer.effectAllowed = "move";
+      event.dataTransfer.setData("text/plain", draggedPinnedGoalId || "");
+      card.classList.add("dragging");
+    });
+
+    priorityGridEl.addEventListener("dragend", () => {
+      draggedPinnedGoalId = null;
+      priorityGridEl.querySelectorAll(".priority-card").forEach((card) => {
+        card.classList.remove("dragging", "drop-target");
+      });
+    });
+
+    priorityGridEl.addEventListener("dragover", (event) => {
+      const card = event.target.closest(".priority-card[data-goal-id]");
+      if (!card || !draggedPinnedGoalId) {
+        return;
+      }
+      event.preventDefault();
+      event.dataTransfer.dropEffect = "move";
+      priorityGridEl.querySelectorAll(".priority-card").forEach((item) => item.classList.remove("drop-target"));
+      card.classList.add("drop-target");
+    });
+
+    priorityGridEl.addEventListener("drop", (event) => {
+      const card = event.target.closest(".priority-card[data-goal-id]");
+      if (!card || !draggedPinnedGoalId) {
+        return;
+      }
+      event.preventDefault();
+      const targetGoalId = card.dataset.goalId;
+      if (!targetGoalId || targetGoalId === draggedPinnedGoalId) {
+        return;
+      }
+
+      const activeGoals = getActiveGoalViews();
+      const targetActiveIndex = activeGoals.findIndex((goal) => goal.id === targetGoalId);
+      if (targetActiveIndex < 0) {
+        return;
+      }
+
+      BudgetCore.moveGoalToIndex(state, draggedPinnedGoalId, targetActiveIndex);
+      state = BudgetCore.loadState();
+      renderHomePage();
+    });
+
+    sliderTrackEl.addEventListener("click", (event) => {
+      const card = event.target.closest(".slider-card[data-goal-id]");
+      if (!card) {
+        return;
+      }
+      const goalId = card.dataset.goalId;
+      if (!goalId) {
+        return;
+      }
+      window.location.href = `goal-detail.html?id=${encodeURIComponent(goalId)}`;
+    });
+
+    sliderTrackEl.addEventListener("keydown", (event) => {
+      const card = event.target.closest(".slider-card[data-goal-id]");
+      if (!card) {
+        return;
+      }
+      if (event.key === "Enter" || event.key === " ") {
+        event.preventDefault();
+        window.location.href = `goal-detail.html?id=${encodeURIComponent(card.dataset.goalId)}`;
+      }
+    });
+
+    sliderTrackEl.addEventListener("dragstart", (event) => {
+      const card = event.target.closest(".slider-card[data-goal-id]");
+      if (!card) {
+        return;
+      }
+      draggedSliderGoalId = card.dataset.goalId;
+      event.dataTransfer.effectAllowed = "move";
+      event.dataTransfer.setData("text/plain", draggedSliderGoalId || "");
+      card.classList.add("dragging");
+    });
+
+    sliderTrackEl.addEventListener("dragend", () => {
+      draggedSliderGoalId = null;
+      sliderTrackEl.querySelectorAll(".slider-card").forEach((card) => {
+        card.classList.remove("dragging", "drop-target");
+      });
+    });
+
+    sliderTrackEl.addEventListener("dragover", (event) => {
+      const card = event.target.closest(".slider-card[data-goal-id]");
+      if (!card || !draggedSliderGoalId) {
+        return;
+      }
+      event.preventDefault();
+      event.dataTransfer.dropEffect = "move";
+      sliderTrackEl.querySelectorAll(".slider-card").forEach((item) => item.classList.remove("drop-target"));
+      card.classList.add("drop-target");
+    });
+
+    sliderTrackEl.addEventListener("drop", (event) => {
+      const card = event.target.closest(".slider-card[data-goal-id]");
+      if (!card || !draggedSliderGoalId) {
+        return;
+      }
+      event.preventDefault();
+      const targetGoalId = card.dataset.goalId;
+      if (!targetGoalId || targetGoalId === draggedSliderGoalId) {
+        return;
+      }
+
+      const activeGoals = getActiveGoalViews();
+      const targetIndex = activeGoals.findIndex((goal) => goal.id === targetGoalId);
+      if (targetIndex < 0) {
+        return;
+      }
+
+      BudgetCore.moveGoalToIndex(state, draggedSliderGoalId, targetIndex);
+      state = BudgetCore.loadState();
+      renderHomePage();
+    });
+
+    window.addEventListener("pageshow", () => {
+      renderQuote(true);
+      renderHomePage();
+      syncAdminEntry();
+    });
+
+    document.addEventListener("visibilitychange", () => {
+      if (!document.hidden) {
+        renderQuote(true);
+      }
+    });
+
+    function renderQuote(forceDifferent = false) {
+      const lastQuoteText = sessionStorage.getItem("wish-grocery-last-quote") || "";
+      const quote = BudgetCore.getRandomQuote(forceDifferent ? lastQuoteText : "");
+      quoteTextEl.textContent = quote.text;
+      quoteAuthorEl.textContent = quote.author;
+      sessionStorage.setItem("wish-grocery-last-quote", quote.text);
+    }
+
+    async function syncAdminEntry() {
+      try {
+        const response = await fetch("/api/session");
+        const result = await response.json();
+        adminEntryButtonEl.hidden = !(result?.authenticated && result?.user?.role === "admin");
+      } catch {
+        adminEntryButtonEl.hidden = true;
+      }
+    }
+
+    function syncThemeInputs() {
+      Object.entries(themeInputs).forEach(([key, input]) => {
+        input.value = state.ui.theme[key];
+        themePreviewDots[key].style.setProperty("--swatch-color", input.value);
+      });
+    }
+
+    function getActiveGoalViews() {
+      return BudgetCore.getGoalViews(state, { includeCompleted: false }).filter((goal) => goal.status === "active");
+    }
+
+    function renderMainGoals(goalViews) {
+      const pinnedGoals = goalViews.filter((goal) => goal.isPinned).slice(0, BudgetCore.MAX_PINNED_GOALS);
+      heroGoalCountLabelEl.textContent = `${pinnedGoals.length} / ${BudgetCore.MAX_PINNED_GOALS} 已置顶`;
+
+      const cards = pinnedGoals.map((goal, index) => {
+        const percent = Math.round(goal.progress * 100);
+        const deadlineText = goal.hasDeadline && goal.deadline ? BudgetCore.formatDate(goal.deadline) : "自由推进";
+        const imageMarkup = goal.image
+          ? `<img class="priority-card-backdrop" alt="" src="${BudgetCore.escapeHtml(goal.image)}">`
+          : "";
+
+        return `
+          <article class="priority-card priority-card-compact ${goal.image ? "has-image" : ""}" data-goal-id="${goal.id}" style="border-color:${goal.color}55;">
+            ${imageMarkup}
+            <div class="priority-topline">
+              <span class="priority-rank">TOP ${index + 1}</span>
+              <div class="priority-quick-actions">
+                <button class="priority-drag-handle" type="button" draggable="true" data-drag-handle="true" aria-label="拖动调整顺序" title="拖动调整顺序">拖动</button>
+                <button class="ghost-button small priority-mini-button" type="button" data-home-action="move-left" data-goal-id="${goal.id}">左</button>
+                <button class="ghost-button small priority-mini-button" type="button" data-home-action="move-right" data-goal-id="${goal.id}">右</button>
+                <a class="ghost-button small priority-card-link priority-mini-link text-link" href="goal-detail.html?id=${encodeURIComponent(goal.id)}">详情</a>
+              </div>
+            </div>
+            <div class="priority-core">
+              <div class="goal-visual priority-goal-visual" style="border-color:${goal.color}55;">
+                ${goal.image ? `<img alt="${BudgetCore.escapeHtml(goal.name)}" src="${BudgetCore.escapeHtml(goal.image)}">` : BudgetCore.escapeHtml(goal.icon || "愿")}
+              </div>
+              <div class="priority-summary-block">
+                <strong>${BudgetCore.escapeHtml(goal.name)}</strong>
+                <p>${BudgetCore.formatCurrency(goal.saved)} / ${BudgetCore.formatCurrency(goal.target)}</p>
+              </div>
+              <b class="priority-percent-badge">${percent}%</b>
+            </div>
+            <div class="priority-progress">
+              <div style="width:${percent}%;background:${goal.color};"></div>
+            </div>
+            <div class="priority-footer-line">
+              <span>还差 ${BudgetCore.formatCurrency(goal.remaining)}</span>
+              <span class="priority-deadline-pill">${deadlineText}</span>
+            </div>
+          </article>
+        `;
+      });
+
+      while (cards.length < BudgetCore.MAX_PINNED_GOALS) {
+        cards.push(`
+          <article class="priority-card priority-card-compact empty">
+            <div class="priority-card-title priority-empty-copy">
+              <strong>留给下一个愿望</strong>
+              <p>去愿望管理页把它设成主要目标。</p>
+            </div>
+          </article>
+        `);
+      }
+
+      priorityGridEl.innerHTML = cards.join("");
+    }
+
+    function renderGoalSlider(goalViews) {
+      if (!goalViews.length) {
+        sliderTrackEl.innerHTML = `<div class="empty-state">还没有活跃愿望，去“愿望管理”添加一个吧。</div>`;
+        return;
+      }
+
+      sliderTrackEl.innerHTML = goalViews.map((goal, index) => {
+        const percent = Math.round(goal.progress * 100);
+        const deadlineText = goal.hasDeadline && goal.deadline
+          ? `计划时间：${BudgetCore.formatDate(goal.deadline)}`
+          : "不设计划时间";
+
+        return `
+          <article class="slider-card slider-card-draggable" style="--goal-color:${goal.color};" data-goal-id="${goal.id}" draggable="true" tabindex="0" aria-label="打开 ${BudgetCore.escapeHtml(goal.name)} 详情">
+            <div class="slider-card-topline">
+              <span class="goal-state-pill">${goal.isPinned ? "主要目标" : "普通愿望"}</span>
+              <span class="slider-sort-chip">拖动排序 · ${index + 1}</span>
+            </div>
+            <div class="slider-card-media">
+              <div class="goal-visual">
+                ${goal.image ? `<img alt="${BudgetCore.escapeHtml(goal.name)}" src="${BudgetCore.escapeHtml(goal.image)}">` : BudgetCore.escapeHtml(goal.icon || "愿")}
+              </div>
+            </div>
+            <div class="goal-card-head">
+              <div>
+                <h3>${BudgetCore.escapeHtml(goal.name)}</h3>
+                <small>${deadlineText}</small>
+              </div>
+              <div class="progress-ring" style="--progress:${percent * 3.6}deg;">${percent}%</div>
+            </div>
+            <div class="goal-finance">
+              <div class="goal-meta">
+                <span>已存</span>
+                <strong>${BudgetCore.formatCurrency(goal.saved)}</strong>
+              </div>
+              <div class="goal-meta">
+                <span>目标</span>
+                <strong>${BudgetCore.formatCurrency(goal.target)}</strong>
+              </div>
+              <div class="goal-meta">
+                <span>还差</span>
+                <strong>${BudgetCore.formatCurrency(goal.remaining)}</strong>
+              </div>
+            </div>
+            ${goal.note ? `<p class="muted">${BudgetCore.escapeHtml(goal.note)}</p>` : ""}
+            <p class="goal-tip">${goal.tip}</p>
+          </article>
+        `;
+      }).join("");
+    }
+
+    function renderMetrics(goalViews) {
+      const metrics = BudgetCore.buildMetrics(state, goalViews);
+      document.getElementById("heroGoalCount").textContent = String(goalViews.length);
+      document.getElementById("heroIncomeCount").textContent = String(state.incomes.length);
+      document.getElementById("compactTotalIncome").textContent = metrics[0]?.value || "0 元";
+      document.getElementById("compactGoalMoney").textContent = metrics[1]?.value || "0 元";
+    }
+
+    function renderHomePage() {
+      state = BudgetCore.loadState();
+      const goalViews = getActiveGoalViews();
+      syncThemeInputs();
+      renderMainGoals(goalViews);
+      renderGoalSlider(goalViews);
+      renderMetrics(goalViews);
+      BudgetCore.applyTheme(state.ui.theme);
+    }
+
+    async function initHomePage() {
+      state = await BudgetCore.bootstrapState();
+      renderQuote(true);
+      renderHomePage();
+      syncAdminEntry();
+    }
+
+    initHomePage();
+  </script>
+</body>
+</html>

@@ -1,0 +1,12 @@
+{
+  "name": "wish-grocery",
+  "version": "1.0.0",
+  "private": true,
+  "description": "愿望杂货铺：带审核注册和管理员后台的愿望管理站点",
+  "scripts": {
+    "start": "node preview-server.js"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}

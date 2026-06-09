@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>愿望杂货铺 | 登录与注册</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="page-shell auth-shell">
+    <main class="auth-layout">
+      <section class="hero reveal auth-hero">
+        <div class="hero-copy">
+          <p class="eyebrow">Wish grocery</p>
+          <h1>先申请，再进入你的愿望杂货铺</h1>
+          <p class="hero-text">现在这套站点已经加上了注册申请和人工审核。新用户需要提交申请，管理员同意后才能进入主页和愿望管理。</p>
+          <div class="auth-note-list">
+            <div class="compact-panel">
+              <span>访问方式</span>
+              <strong>审核通过后可登录</strong>
+            </div>
+            <div class="compact-panel">
+              <span>管理员后台</span>
+              <strong>可查看全部申请人</strong>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="panel reveal auth-panel">
+        <div class="auth-tabs">
+          <button class="ghost-button small is-active" id="showLoginTab" type="button">登录</button>
+          <button class="ghost-button small" id="showRegisterTab" type="button">申请注册</button>
+        </div>
+
+        <div class="auth-feedback muted" id="authFeedback">管理员审核通过后，申请用户才能真正登录。</div>
+
+        <form id="loginForm" class="stack-form">
+          <label>
+            <span>用户名</span>
+            <input name="username" type="text" placeholder="例如：xiaoyu" required>
+          </label>
+          <label>
+            <span>密码</span>
+            <input name="password" type="password" placeholder="至少 6 位" required>
+          </label>
+          <div class="form-actions">
+            <button class="solid-button" type="submit">登录进入</button>
+          </div>
+        </form>
+
+        <form id="registerForm" class="stack-form" hidden>
+          <label>
+            <span>昵称</span>
+            <input name="displayName" type="text" placeholder="你希望展示的名字" required>
+          </label>
+          <label>
+            <span>用户名</span>
+            <input name="username" type="text" placeholder="用于登录，建议英文或数字" required>
+          </label>
+          <label>
+            <span>密码</span>
+            <input name="password" type="password" placeholder="至少 6 位" required>
+          </label>
+          <label>
+            <span>申请备注</span>
+            <textarea name="note" rows="3" placeholder="可以简单说明你是谁，方便管理员判断是否通过"></textarea>
+          </label>
+          <div class="form-actions">
+            <button class="solid-button" type="submit">提交注册申请</button>
+          </div>
+        </form>
+
+        <section class="auth-session-card" id="sessionCard" hidden>
+          <h3 id="sessionTitle">当前已登录</h3>
+          <p class="muted" id="sessionSummary"></p>
+          <div class="form-actions">
+            <a class="ghost-button" id="goAppLink" href="index.html">进入主页</a>
+            <a class="ghost-button" id="goAdminLink" href="admin.html" hidden>进入后台</a>
+            <button class="goal-action-button danger" id="logoutButton" type="button">退出登录</button>
+          </div>
+        </section>
+      </section>
+    </main>
+  </div>
+
+  <script>
+    const redirectTarget = new URLSearchParams(window.location.search).get("redirect") || "index.html";
+
+    const loginFormEl = document.getElementById("loginForm");
+    const registerFormEl = document.getElementById("registerForm");
+    const authFeedbackEl = document.getElementById("authFeedback");
+    const sessionCardEl = document.getElementById("sessionCard");
+    const sessionTitleEl = document.getElementById("sessionTitle");
+    const sessionSummaryEl = document.getElementById("sessionSummary");
+    const goAppLinkEl = document.getElementById("goAppLink");
+    const goAdminLinkEl = document.getElementById("goAdminLink");
+    const showLoginTabEl = document.getElementById("showLoginTab");
+    const showRegisterTabEl = document.getElementById("showRegisterTab");
+
+    showLoginTabEl.addEventListener("click", () => switchTab("login"));
+    showRegisterTabEl.addEventListener("click", () => switchTab("register"));
+
+    loginFormEl.addEventListener("submit", async (event) => {
+      event.preventDefault();
+      setFeedback("正在登录，请稍等…");
+      const payload = {
+        username: loginFormEl.elements.username.value.trim(),
+        password: loginFormEl.elements.password.value
+      };
+
+      const response = await fetch("/api/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload)
+      });
+      const result = await response.json();
+      if (!response.ok || !result.ok) {
+        setFeedback(result.message || "登录失败，请重试。", true);
+        return;
+      }
+
+      setFeedback("登录成功，正在进入…");
+      window.location.href = result.user.role === "admin" && redirectTarget === "index.html"
+        ? "admin.html"
+        : redirectTarget;
+    });
+
+    registerFormEl.addEventListener("submit", async (event) => {
+      event.preventDefault();
+      setFeedback("正在提交注册申请…");
+      const payload = {
+        displayName: registerFormEl.elements.displayName.value.trim(),
+        username: registerFormEl.elements.username.value.trim(),
+        password: registerFormEl.elements.password.value,
+        note: registerFormEl.elements.note.value.trim()
+      };
+
+      const response = await fetch("/api/register", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload)
+      });
+      const result = await response.json();
+      if (!response.ok || !result.ok) {
+        setFeedback(result.message || "申请提交失败，请稍后再试。", true);
+        return;
+      }
+
+      registerFormEl.reset();
+      switchTab("login");
+      setFeedback(result.message);
+    });
+
+    document.getElementById("logoutButton").addEventListener("click", async () => {
+      await fetch("/api/logout", { method: "POST" });
+      sessionCardEl.hidden = true;
+      loginFormEl.hidden = false;
+      setFeedback("你已退出登录。");
+      await syncSession();
+    });
+
+    function switchTab(tab) {
+      const showLogin = tab === "login";
+      loginFormEl.hidden = !showLogin;
+      registerFormEl.hidden = showLogin;
+      showLoginTabEl.classList.toggle("is-active", showLogin);
+      showRegisterTabEl.classList.toggle("is-active", !showLogin);
+    }
+
+    function setFeedback(message, isError = false) {
+      authFeedbackEl.textContent = message;
+      authFeedbackEl.classList.toggle("auth-feedback-error", isError);
+    }
+
+    async function syncSession() {
+      const response = await fetch("/api/session");
+      const result = await response.json();
+      if (!result.authenticated || !result.user) {
+        sessionCardEl.hidden = true;
+        goAdminLinkEl.hidden = true;
+        return;
+      }
+
+      sessionCardEl.hidden = false;
+      sessionTitleEl.textContent = `当前已登录：${result.user.displayName}`;
+      sessionSummaryEl.textContent = result.user.role === "admin"
+        ? "你现在是管理员，可以进入后台查看申请列表并批准新用户。"
+        : "你的账号已经通过审核，可以进入主页继续使用。";
+      goAppLinkEl.href = "index.html";
+      goAdminLinkEl.hidden = result.user.role !== "admin";
+
+      if (result.user.role === "admin") {
+        setFeedback("管理员已登录，你也可以直接进入后台。");
+      } else {
+        setFeedback("你已登录，可以直接进入主页。");
+      }
+    }
+
+    syncSession();
+  </script>
+</body>
+</html>

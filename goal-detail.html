@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>愿望超市 | 愿望详情</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="page-shell">
+    <nav class="site-nav">
+      <div class="brand-mark">
+        <strong>愿望超市</strong>
+        <span>单个愿望的详细管理页</span>
+      </div>
+      <div class="nav-links">
+        <a class="nav-link" href="index.html">主页</a>
+        <a class="nav-link" href="goals.html">愿望管理</a>
+        <a class="nav-link" href="records.html">收入记录</a>
+      </div>
+    </nav>
+
+    <main class="dashboard" id="detailApp">
+      <section class="panel reveal" id="notFoundState" hidden>
+        <div class="empty-state">没有找到这个愿望目标。你可以返回 <a href="goals.html">愿望管理</a> 重新选择。</div>
+      </section>
+
+      <section id="detailContent" hidden>
+        <section class="panel reveal detail-hero">
+          <div class="detail-summary">
+            <div class="section-head">
+              <div>
+                <p class="section-kicker">Goal detail</p>
+                <h1 id="detailGoalName">愿望详情</h1>
+                <p class="page-intro" id="detailGoalTip">这里可以直接修改这个愿望的数据，也能完成、删除或重新开启它。</p>
+              </div>
+            </div>
+            <div class="detail-stats">
+              <div class="detail-stat">
+                <span class="muted">当前状态</span>
+                <strong id="detailGoalStatus">活跃目标</strong>
+              </div>
+              <div class="detail-stat">
+                <span class="muted">已攒金额</span>
+                <strong id="detailGoalSaved">0 元</strong>
+              </div>
+              <div class="detail-stat">
+                <span class="muted">还差多少</span>
+                <strong id="detailGoalRemaining">0 元</strong>
+              </div>
+            </div>
+          </div>
+          <div class="panel">
+            <div class="goal-card-head">
+              <div>
+                <h3 id="detailCardName">-</h3>
+                <small id="detailCardDeadline">不设计划时间</small>
+              </div>
+              <div class="progress-ring" id="detailProgressRing">0%</div>
+            </div>
+            <div class="goal-finance">
+              <div class="goal-meta">
+                <span>已攒</span>
+                <strong id="detailMetaSaved">0 元</strong>
+              </div>
+              <div class="goal-meta">
+                <span>目标</span>
+                <strong id="detailMetaTarget">0 元</strong>
+              </div>
+              <div class="goal-meta">
+                <span>还差</span>
+                <strong id="detailMetaRemaining">0 元</strong>
+              </div>
+            </div>
+            <p class="goal-tip" id="detailMetaTip"></p>
+          </div>
+        </section>
+
+        <section class="split-layout">
+          <section class="panel reveal">
+            <div class="section-head compact">
+              <div>
+                <p class="section-kicker">Edit here</p>
+                <h2>修改这个愿望</h2>
+              </div>
+            </div>
+            <form id="detailGoalForm" class="stack-form">
+              <label>
+                <span>目标名称</span>
+                <input name="name" type="text" required>
+              </label>
+              <label>
+                <span>目标金额</span>
+                <input name="target" type="number" min="1" step="1" required>
+              </label>
+              <label>
+                <span>已攒金额</span>
+                <input name="baseSaved" type="number" min="0" step="1">
+              </label>
+              <label>
+                <span>目标图标</span>
+                <input name="icon" type="text" maxlength="4" placeholder="例如：✈、📚、🏠">
+              </label>
+              <label>
+                <span>目标图片 URL</span>
+                <input name="image" type="url" placeholder="可选：放一张代表这个愿望的图片链接">
+              </label>
+              <label class="toggle-chip">
+                <input name="hasDeadline" type="checkbox" checked>
+                <span>设置计划时间</span>
+              </label>
+              <label>
+                <span>计划日期</span>
+                <input name="deadline" type="date">
+              </label>
+              <label>
+                <span>目标备注</span>
+                <textarea name="note" rows="3" placeholder="写一点这个目标的用途、理由或提醒"></textarea>
+              </label>
+              <label>
+                <span>目标颜色</span>
+                <input name="color" type="color">
+              </label>
+              <div class="form-actions">
+                <button class="solid-button" type="submit">保存修改</button>
+                <a class="ghost-button" href="goals.html">返回愿望管理</a>
+              </div>
+              <p class="form-hint">你在这里输入时，上面的详情卡片会实时预览变化。</p>
+            </form>
+          </section>
+
+          <section class="panel reveal">
+            <div class="section-head compact">
+              <div>
+                <p class="section-kicker">Actions</p>
+                <h2>操作这个愿望</h2>
+              </div>
+            </div>
+            <div class="stack-form">
+              <button class="goal-action-button secondary" id="detailTogglePin" type="button">设为主要目标</button>
+              <button class="goal-action-button secondary" id="detailCompleteGoal" type="button">完成目标</button>
+              <button class="goal-action-button" id="detailReopenGoal" type="button" hidden>重新开启目标</button>
+              <button class="goal-action-button danger" id="detailDeleteGoal" type="button">删除目标</button>
+            </div>
+          </section>
+        </section>
+      </section>
+    </main>
+  </div>
+
+  <script src="budget-core.js"></script>
+  <script>
+    let state = BudgetCore.loadState();
+    const params = new URLSearchParams(window.location.search);
+    const goalId = params.get("id");
+    let editingDraft = null;
+
+    const notFoundStateEl = document.getElementById("notFoundState");
+    const detailContentEl = document.getElementById("detailContent");
+    const formEl = document.getElementById("detailGoalForm");
+
+    const detailGoalNameEl = document.getElementById("detailGoalName");
+    const detailGoalTipEl = document.getElementById("detailGoalTip");
+    const detailGoalStatusEl = document.getElementById("detailGoalStatus");
+    const detailGoalSavedEl = document.getElementById("detailGoalSaved");
+    const detailGoalRemainingEl = document.getElementById("detailGoalRemaining");
+    const detailCardNameEl = document.getElementById("detailCardName");
+    const detailCardDeadlineEl = document.getElementById("detailCardDeadline");
+    const detailProgressRingEl = document.getElementById("detailProgressRing");
+    const detailMetaSavedEl = document.getElementById("detailMetaSaved");
+    const detailMetaTargetEl = document.getElementById("detailMetaTarget");
+    const detailMetaRemainingEl = document.getElementById("detailMetaRemaining");
+    const detailMetaTipEl = document.getElementById("detailMetaTip");
+    const detailTogglePinEl = document.getElementById("detailTogglePin");
+    const detailCompleteGoalEl = document.getElementById("detailCompleteGoal");
+    const detailReopenGoalEl = document.getElementById("detailReopenGoal");
+    const detailDeleteGoalEl = document.getElementById("detailDeleteGoal");
+
+    function getGoalView() {
+      return BudgetCore.getGoalById(state, goalId);
+    }
+
+    function getRenderableGoal() {
+      const goal = getGoalView();
+      if (!goal) {
+        return null;
+      }
+      if (!editingDraft) {
+        return goal;
+      }
+      const target = editingDraft.target > 0 ? editingDraft.target : goal.target;
+      const baseSaved = editingDraft.baseSaved >= 0 ? editingDraft.baseSaved : goal.baseSaved;
+      const saved = baseSaved + (goal.saved - goal.baseSaved);
+      const progress = Math.min(saved / Math.max(target, 1), 1);
+      const remaining = Math.max(target - saved, 0);
+      return {
+        ...goal,
+        name: editingDraft.name || goal.name,
+        target,
+        baseSaved,
+        icon: editingDraft.icon || goal.icon,
+        image: editingDraft.image || "",
+        hasDeadline: editingDraft.hasDeadline,
+        deadline: editingDraft.hasDeadline ? (editingDraft.deadline || "") : "",
+        note: editingDraft.note || "",
+        color: editingDraft.color || goal.color,
+        saved,
+        progress,
+        remaining,
+        tip: remaining === 0 ? "已经攒够啦，可以开始计划出发或购买了。" : `还差 ${BudgetCore.formatCurrency(remaining)}，继续靠近这个目标。`
+      };
+    }
+
+    function syncDraftFromForm() {
+      editingDraft = {
+        name: String(formEl.elements.name.value || "").trim(),
+        target: Number(formEl.elements.target.value || 0),
+        baseSaved: Number(formEl.elements.baseSaved.value || 0),
+        icon: String(formEl.elements.icon.value || "").trim(),
+        image: String(formEl.elements.image.value || "").trim(),
+        hasDeadline: formEl.elements.hasDeadline.checked,
+        deadline: String(formEl.elements.deadline.value || ""),
+        note: String(formEl.elements.note.value || "").trim(),
+        color: String(formEl.elements.color.value || BudgetCore.palette[0])
+      };
+    }
+
+    function fillForm(goal) {
+      formEl.elements.name.value = goal.name;
+      formEl.elements.target.value = String(goal.target);
+      formEl.elements.baseSaved.value = String(goal.baseSaved);
+      formEl.elements.icon.value = goal.icon || "";
+      formEl.elements.image.value = goal.image || "";
+      formEl.elements.hasDeadline.checked = goal.hasDeadline;
+      formEl.elements.deadline.value = goal.deadline || "";
+      formEl.elements.note.value = goal.note || "";
+      formEl.elements.color.value = goal.color;
+    }
+
+    function renderDetail() {
+      state = BudgetCore.loadState();
+      const goal = getGoalView();
+      if (!goal) {
+        notFoundStateEl.hidden = false;
+        detailContentEl.hidden = true;
+        return;
+      }
+
+      if (!editingDraft) {
+        fillForm(goal);
+      }
+
+      const renderGoal = getRenderableGoal();
+      const percent = Math.round(renderGoal.progress * 100);
+      notFoundStateEl.hidden = true;
+      detailContentEl.hidden = false;
+
+      detailGoalNameEl.textContent = renderGoal.name;
+      detailGoalTipEl.textContent = renderGoal.tip;
+      detailGoalStatusEl.textContent = renderGoal.status === "completed" ? "已完成目标" : (renderGoal.isPinned ? "主要目标" : "活跃目标");
+      detailGoalSavedEl.textContent = BudgetCore.formatCurrency(renderGoal.saved);
+      detailGoalRemainingEl.textContent = BudgetCore.formatCurrency(renderGoal.remaining);
+      detailCardNameEl.textContent = `${renderGoal.icon || "🎯"} ${renderGoal.name}`;
+      detailCardDeadlineEl.textContent = renderGoal.hasDeadline && renderGoal.deadline ? `计划时间：${BudgetCore.formatDate(renderGoal.deadline)}` : "不设计划时间";
+      detailProgressRingEl.textContent = `${percent}%`;
+      detailProgressRingEl.style.setProperty("--progress", `${percent * 3.6}deg`);
+      detailProgressRingEl.style.setProperty("--goal-color", renderGoal.color);
+      detailMetaSavedEl.textContent = BudgetCore.formatCurrency(renderGoal.saved);
+      detailMetaTargetEl.textContent = BudgetCore.formatCurrency(renderGoal.target);
+      detailMetaRemainingEl.textContent = BudgetCore.formatCurrency(renderGoal.remaining);
+      detailMetaTipEl.textContent = renderGoal.note ? `${renderGoal.note} · ${renderGoal.tip}` : renderGoal.tip;
+
+      detailTogglePinEl.textContent = renderGoal.isPinned ? "取消主要目标" : "设为主要目标";
+      detailTogglePinEl.hidden = renderGoal.status === "completed";
+      detailCompleteGoalEl.hidden = renderGoal.status === "completed";
+      detailReopenGoalEl.hidden = renderGoal.status !== "completed";
+    }
+
+    formEl.addEventListener("input", () => {
+      syncDraftFromForm();
+      renderDetail();
+    });
+
+    formEl.addEventListener("change", () => {
+      syncDraftFromForm();
+      renderDetail();
+    });
+
+    formEl.addEventListener("submit", (event) => {
+      event.preventDefault();
+      syncDraftFromForm();
+      if (!editingDraft.name || editingDraft.target <= 0) {
+        return;
+      }
+      BudgetCore.updateGoal(state, goalId, editingDraft);
+      editingDraft = null;
+      renderDetail();
+    });
+
+    detailTogglePinEl.addEventListener("click", () => {
+      const result = BudgetCore.togglePinnedGoal(state, goalId);
+      if (!result.ok && result.reason === "limit") {
+        window.alert(`最多只能选择 ${BudgetCore.MAX_PINNED_GOALS} 个主要目标。`);
+      }
+      renderDetail();
+    });
+
+    detailCompleteGoalEl.addEventListener("click", () => {
+      const confirmed = window.confirm("确定把这个愿望标记为已完成吗？");
+      if (!confirmed) {
+        return;
+      }
+      BudgetCore.completeGoal(state, goalId);
+      editingDraft = null;
+      renderDetail();
+    });
+
+    detailReopenGoalEl.addEventListener("click", () => {
+      BudgetCore.reopenGoal(state, goalId);
+      editingDraft = null;
+      renderDetail();
+    });
+
+    detailDeleteGoalEl.addEventListener("click", () => {
+      const confirmed = window.confirm("确定删除这个愿望吗？删除后相关记录会进入归档。");
+      if (!confirmed) {
+        return;
+      }
+      BudgetCore.deleteGoal(state, goalId);
+      window.location.href = "goals.html";
+    });
+
+    async function initDetailPage() {
+      state = await BudgetCore.bootstrapState();
+      renderDetail();
+      BudgetCore.applyTheme(state.ui.theme);
+    }
+
+    initDetailPage();
+  </script>
+</body>
+</html>

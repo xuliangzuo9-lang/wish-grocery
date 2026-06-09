@@ -1,0 +1,527 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>愿望超市 | 收入记录</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="page-shell">
+    <nav class="site-nav">
+      <div class="brand-mark">
+        <strong>愿望超市</strong>
+        <span>管理收入流向，也管理每一笔愿望投入</span>
+      </div>
+      <div class="nav-links">
+        <a class="nav-link" href="index.html">主页</a>
+        <a class="nav-link" href="goals.html">愿望管理</a>
+        <a class="nav-link active" href="records.html">收入记录</a>
+      </div>
+    </nav>
+
+    <main class="dashboard">
+      <section class="panel reveal">
+        <div class="section-head">
+          <div>
+            <p class="section-kicker">Income flow</p>
+            <h1>收入分配记录</h1>
+            <p class="page-intro">这里专门记录收入、分配去向，以及管理那些因为“已完成”或“已删除”而留下来的历史记录。</p>
+          </div>
+          <div class="section-actions">
+            <button class="ghost-button" id="resetRecordData" type="button">恢复示例数据</button>
+          </div>
+        </div>
+      </section>
+
+      <section class="split-layout">
+        <div>
+          <section class="panel reveal">
+            <div class="section-head">
+              <div>
+                <p class="section-kicker">History</p>
+                <h2>收入分配历史</h2>
+              </div>
+            </div>
+            <div class="record-filters">
+              <label class="toggle-chip">
+                <input id="showArchivedAllocations" type="checkbox" checked>
+                <span>显示已完成 / 已删除目标记录</span>
+              </label>
+              <button class="ghost-button small" id="clearArchivedAllocations" type="button">清理全部归档记录</button>
+            </div>
+            <div class="records-list" id="archivedRecordManager"></div>
+            <div class="allocation-summary" id="allocationSummary"></div>
+            <div class="records-list" id="recordsList"></div>
+          </section>
+        </div>
+
+        <section class="panel reveal">
+          <div class="section-head compact">
+            <div>
+              <p class="section-kicker">Add income</p>
+              <h2>新增一笔收入</h2>
+            </div>
+          </div>
+          <form id="incomeForm" class="stack-form">
+            <label>
+              <span>收入日期</span>
+              <input name="date" type="date" required>
+            </label>
+            <label>
+              <span>收入来源</span>
+              <input name="source" type="text" placeholder="例如：工资、兼职、红包" required>
+            </label>
+            <label>
+              <span>收入金额</span>
+              <input name="amount" type="number" min="1" step="1" placeholder="1200" required>
+            </label>
+            <label>
+              <span>备注</span>
+              <textarea name="note" rows="3" placeholder="记录这笔钱的背景、用途或提醒"></textarea>
+            </label>
+
+            <div class="allocation-builder">
+              <div class="builder-head">
+                <span>分配明细</span>
+                <button class="ghost-button small" id="addAllocationRow" type="button">添加一项</button>
+              </div>
+              <div id="allocationRows" class="allocation-rows"></div>
+              <div class="allocation-balance" id="allocationBalance">请先填写收入金额，再完成分配。</div>
+            </div>
+
+            <button class="solid-button" type="submit">保存收入记录</button>
+          </form>
+        </section>
+      </section>
+    </main>
+  </div>
+
+  <template id="allocationRowTemplate">
+    <div class="allocation-row">
+      <label>
+        <span>类型</span>
+        <select class="allocation-type">
+          <option value="goal">愿望储蓄</option>
+          <option value="category">普通用途</option>
+        </select>
+      </label>
+      <label>
+        <span>去向</span>
+        <select class="allocation-goal"></select>
+        <input class="allocation-category" type="text" placeholder="例如：生活费、备用金、娱乐">
+      </label>
+      <label>
+        <span>金额</span>
+        <input class="allocation-amount" type="number" min="0" step="1" placeholder="300">
+      </label>
+      <button class="icon-button remove-row" type="button" aria-label="移除分配项">×</button>
+    </div>
+  </template>
+
+  <script src="budget-core.js"></script>
+  <script>
+    let state = BudgetCore.loadState();
+
+    const allocationSummaryEl = document.getElementById("allocationSummary");
+    const recordsListEl = document.getElementById("recordsList");
+    const showArchivedAllocationsEl = document.getElementById("showArchivedAllocations");
+    const clearArchivedAllocationsEl = document.getElementById("clearArchivedAllocations");
+    const archivedRecordManagerEl = document.getElementById("archivedRecordManager");
+    const incomeFormEl = document.getElementById("incomeForm");
+    const allocationRowsEl = document.getElementById("allocationRows");
+    const allocationBalanceEl = document.getElementById("allocationBalance");
+    const allocationRowTemplate = document.getElementById("allocationRowTemplate");
+
+    document.getElementById("resetRecordData").addEventListener("click", () => {
+      state = BudgetCore.resetState();
+      incomeFormEl.reset();
+      incomeFormEl.elements.date.value = BudgetCore.getToday();
+      resetAllocationRows();
+      renderRecordsPage();
+    });
+
+    showArchivedAllocationsEl.addEventListener("change", () => {
+      BudgetCore.setArchivedVisibility(state, showArchivedAllocationsEl.checked);
+      state = BudgetCore.loadState();
+      renderRecordsPage();
+    });
+
+    clearArchivedAllocationsEl.addEventListener("click", () => {
+      const archivedCount = BudgetCore.countArchivedAllocations(state);
+      if (!archivedCount) {
+        return;
+      }
+      const confirmed = window.confirm(`这会永久移除全部 ${archivedCount} 条归档记录，确定继续吗？`);
+      if (!confirmed) {
+        return;
+      }
+      BudgetCore.clearArchivedAllocations(state);
+      state = BudgetCore.loadState();
+      renderRecordsPage();
+    });
+
+    archivedRecordManagerEl.addEventListener("click", (event) => {
+      const button = event.target.closest("[data-record-action]");
+      if (!button) {
+        return;
+      }
+
+      const action = button.dataset.recordAction;
+      const visibilityKey = button.dataset.visibilityKey;
+      const itemId = button.dataset.itemId;
+      const visible = button.dataset.visible === "true";
+      const itemLabel = button.dataset.itemLabel || "这条记录";
+
+      if (action === "toggle-visibility" && visibilityKey) {
+        BudgetCore.setAllocationVisibilityByKey(state, visibilityKey, !visible);
+        state = BudgetCore.loadState();
+        renderRecordsPage();
+        return;
+      }
+
+      if (action === "delete-entry" && itemId) {
+        const confirmed = window.confirm(`将永久删除“${itemLabel}”这条归档记录，确定继续吗？`);
+        if (!confirmed) {
+          return;
+        }
+        BudgetCore.deleteArchivedAllocationEntry(state, itemId);
+        state = BudgetCore.loadState();
+        renderRecordsPage();
+      }
+    });
+
+    incomeFormEl.addEventListener("submit", (event) => {
+      event.preventDefault();
+      const amount = Number(incomeFormEl.elements.amount.value);
+      const source = String(incomeFormEl.elements.source.value || "").trim();
+      const date = incomeFormEl.elements.date.value;
+      const note = String(incomeFormEl.elements.note.value || "").trim();
+      const allocations = collectAllocations();
+
+      if (!source || !date || amount <= 0) {
+        allocationBalanceEl.textContent = "请先完整填写收入日期、来源和金额。";
+        allocationBalanceEl.className = "allocation-balance danger";
+        return;
+      }
+
+      const allocatedTotal = allocations.reduce((sum, item) => sum + item.amount, 0);
+      if (!allocations.length || Math.abs(allocatedTotal - amount) > 0.01) {
+        allocationBalanceEl.textContent = "分配总额需要和收入金额完全一致，这样数据才会准确。";
+        allocationBalanceEl.className = "allocation-balance danger";
+        return;
+      }
+
+      BudgetCore.addIncomeRecord(state, { date, source, amount, note, allocations });
+      state = BudgetCore.loadState();
+      incomeFormEl.reset();
+      incomeFormEl.elements.date.value = BudgetCore.getToday();
+      resetAllocationRows();
+      renderRecordsPage();
+    });
+
+    incomeFormEl.elements.amount.addEventListener("input", updateAllocationBalance);
+    document.getElementById("addAllocationRow").addEventListener("click", () => addAllocationRow());
+
+    allocationRowsEl.addEventListener("change", (event) => {
+      if (event.target.classList.contains("allocation-type")) {
+        toggleAllocationMode(event.target.closest(".allocation-row"));
+      }
+      updateAllocationBalance();
+    });
+
+    allocationRowsEl.addEventListener("input", (event) => {
+      if (
+        event.target.classList.contains("allocation-amount") ||
+        event.target.classList.contains("allocation-category")
+      ) {
+        updateAllocationBalance();
+      }
+    });
+
+    allocationRowsEl.addEventListener("click", (event) => {
+      if (!event.target.classList.contains("remove-row")) {
+        return;
+      }
+      const rows = allocationRowsEl.querySelectorAll(".allocation-row");
+      if (rows.length === 1) {
+        clearAllocationRow(rows[0]);
+      } else {
+        event.target.closest(".allocation-row").remove();
+      }
+      updateAllocationBalance();
+    });
+
+    function syncGoalOptions() {
+      const activeGoals = BudgetCore.getActiveGoals(state);
+      allocationRowsEl.querySelectorAll(".allocation-row").forEach((row) => {
+        const select = row.querySelector(".allocation-goal");
+        const previous = select.value;
+        select.innerHTML = activeGoals.length
+          ? activeGoals.map((goal) => `<option value="${goal.id}">${BudgetCore.escapeHtml(goal.name)}</option>`).join("")
+          : `<option value="">请先创建愿望</option>`;
+        if ([...select.options].some((option) => option.value === previous)) {
+          select.value = previous;
+        }
+      });
+    }
+
+    function addAllocationRow(prefill = {}) {
+      const fragment = allocationRowTemplate.content.cloneNode(true);
+      const row = fragment.querySelector(".allocation-row");
+      const activeGoals = BudgetCore.getActiveGoals(state);
+      const typeSelect = row.querySelector(".allocation-type");
+      const goalSelect = row.querySelector(".allocation-goal");
+      const categoryInput = row.querySelector(".allocation-category");
+      const amountInput = row.querySelector(".allocation-amount");
+
+      goalSelect.innerHTML = activeGoals.length
+        ? activeGoals.map((goal) => `<option value="${goal.id}">${BudgetCore.escapeHtml(goal.name)}</option>`).join("")
+        : `<option value="">请先创建愿望</option>`;
+
+      if (prefill.type) {
+        typeSelect.value = prefill.type;
+      }
+      if (prefill.targetId) {
+        goalSelect.value = prefill.targetId;
+      }
+      if (prefill.label) {
+        categoryInput.value = prefill.label;
+      }
+      if (prefill.amount) {
+        amountInput.value = prefill.amount;
+      }
+
+      allocationRowsEl.appendChild(fragment);
+      toggleAllocationMode(allocationRowsEl.lastElementChild);
+      updateAllocationBalance();
+    }
+
+    function toggleAllocationMode(row) {
+      const type = row.querySelector(".allocation-type").value;
+      const goalSelect = row.querySelector(".allocation-goal");
+      const categoryInput = row.querySelector(".allocation-category");
+      if (type === "goal") {
+        goalSelect.hidden = false;
+        goalSelect.disabled = false;
+        categoryInput.hidden = true;
+        categoryInput.disabled = true;
+      } else {
+        goalSelect.hidden = true;
+        goalSelect.disabled = true;
+        categoryInput.hidden = false;
+        categoryInput.disabled = false;
+      }
+    }
+
+    function clearAllocationRow(row) {
+      row.querySelector(".allocation-type").value = BudgetCore.getActiveGoals(state).length ? "goal" : "category";
+      row.querySelector(".allocation-category").value = "";
+      row.querySelector(".allocation-amount").value = "";
+      toggleAllocationMode(row);
+    }
+
+    function resetAllocationRows() {
+      allocationRowsEl.innerHTML = "";
+      addAllocationRow({ type: BudgetCore.getActiveGoals(state).length ? "goal" : "category" });
+      addAllocationRow({ type: "category", label: "生活费" });
+    }
+
+    function collectAllocations() {
+      const activeGoals = BudgetCore.getActiveGoals(state);
+      return Array.from(allocationRowsEl.querySelectorAll(".allocation-row"))
+        .map((row) => {
+          const type = row.querySelector(".allocation-type").value;
+          const amount = Number(row.querySelector(".allocation-amount").value);
+          if (!amount || amount <= 0) {
+            return null;
+          }
+
+          if (type === "goal") {
+            const targetId = row.querySelector(".allocation-goal").value;
+            const goal = activeGoals.find((item) => item.id === targetId);
+            if (!goal) {
+              return null;
+            }
+            return {
+              type,
+              targetId,
+              targetName: goal.name,
+              amount
+            };
+          }
+
+          const label = String(row.querySelector(".allocation-category").value || "").trim();
+          if (!label) {
+            return null;
+          }
+          return {
+            type,
+            label,
+            amount
+          };
+        })
+        .filter(Boolean);
+    }
+
+    function updateAllocationBalance() {
+      const incomeAmount = Number(incomeFormEl.elements.amount.value);
+      const allocated = collectAllocations().reduce((sum, item) => sum + item.amount, 0);
+
+      if (!incomeAmount) {
+        allocationBalanceEl.textContent = "请先填写收入金额，再完成分配。";
+        allocationBalanceEl.className = "allocation-balance";
+        return;
+      }
+
+      const difference = Math.round((incomeAmount - allocated) * 100) / 100;
+      if (difference === 0) {
+        allocationBalanceEl.textContent = `分配完成，${BudgetCore.formatCurrency(allocated)} 已全部安排好。`;
+        allocationBalanceEl.className = "allocation-balance";
+        return;
+      }
+
+      if (difference > 0) {
+        allocationBalanceEl.textContent = `还有 ${BudgetCore.formatCurrency(difference)} 没有分配。`;
+        allocationBalanceEl.className = "allocation-balance warning";
+        return;
+      }
+
+      allocationBalanceEl.textContent = `当前多分配了 ${BudgetCore.formatCurrency(Math.abs(difference))}，请调整一下金额。`;
+      allocationBalanceEl.className = "allocation-balance danger";
+    }
+
+    function renderAllocationSummary() {
+      const summary = BudgetCore.getAllocationSummary(state);
+      const total = summary.reduce((sum, item) => sum + item.amount, 0);
+      if (!summary.length) {
+        allocationSummaryEl.innerHTML = `<div class="empty-state">还没有收入分配记录。先录入一笔收入，这里就会开始展示你的资金流向。</div>`;
+        return;
+      }
+
+      allocationSummaryEl.innerHTML = summary.map((item) => {
+        const percent = total ? Math.round((item.amount / total) * 100) : 0;
+        return `
+          <div class="allocation-strip">
+            <span class="allocation-strip-label">${BudgetCore.escapeHtml(item.label)}</span>
+            <div class="allocation-strip-bar">
+              <div class="allocation-strip-fill" style="width:${percent}%;background:${item.color};"></div>
+            </div>
+            <strong>${BudgetCore.formatCurrency(item.amount)} / ${percent}%</strong>
+          </div>
+        `;
+      }).join("");
+    }
+
+    function renderArchivedGroup(title, entries, emptyText) {
+      return `
+        <article class="record-item archive-manager-card">
+          <div class="record-top">
+            <div>
+              <h3>${title}</h3>
+              <div class="record-meta">${entries.length} 条记录，可逐条隐藏、恢复或彻底删除。</div>
+            </div>
+          </div>
+          ${entries.length ? `
+            <div class="archive-manager-list">
+              ${entries.map((entry) => `
+                <article class="archive-manager-item ${entry.visible ? "is-visible" : "is-hidden"}">
+                  <div>
+                    <strong>${BudgetCore.escapeHtml(entry.item.label)}</strong>
+                    <div class="record-meta">${BudgetCore.escapeHtml(entry.incomeSource)} · ${BudgetCore.formatDate(entry.incomeDate)} · ${BudgetCore.formatCurrency(entry.item.amount)}</div>
+                  </div>
+                  <div class="archive-manager-actions">
+                    <button
+                      class="goal-action-button ${entry.visible ? "secondary" : "danger"}"
+                      type="button"
+                      data-record-action="toggle-visibility"
+                      data-visibility-key="${entry.key}"
+                      data-visible="${entry.visible ? "true" : "false"}"
+                    >
+                      ${entry.visible ? "隐藏" : "恢复"}
+                    </button>
+                    <button
+                      class="goal-action-button danger"
+                      type="button"
+                      data-record-action="delete-entry"
+                      data-item-id="${entry.itemId}"
+                      data-item-label="${BudgetCore.escapeHtml(entry.item.label)}"
+                    >
+                      删除
+                    </button>
+                  </div>
+                </article>
+              `).join("")}
+            </div>
+          ` : `<div class="empty-state archive-empty">${emptyText}</div>`}
+        </article>
+      `;
+    }
+
+    function renderArchivedManager() {
+      const archivedEntries = BudgetCore.getArchivedAllocationEntries(state);
+      const completedEntries = archivedEntries.filter((entry) => entry.item.type === "completed-goal");
+      const deletedEntries = archivedEntries.filter((entry) => entry.item.type === "archived-goal");
+
+      archivedRecordManagerEl.innerHTML = `
+        ${renderArchivedGroup("已完成目标记录", completedEntries, "目前还没有已完成目标留下的历史记录。")}
+        ${renderArchivedGroup("已删除目标记录", deletedEntries, "目前还没有已删除目标留下的历史记录。")}
+      `;
+    }
+
+    function renderRecordsList() {
+      const visibleRecords = BudgetCore.getVisibleIncomeRecords(state);
+      if (!visibleRecords.length) {
+        recordsListEl.innerHTML = `<div class="empty-state">当前筛选下没有可展示的收入记录。</div>`;
+        return;
+      }
+
+      recordsListEl.innerHTML = visibleRecords.map((income) => {
+        const chips = income.allocations.map((item) => {
+          const label = item.type === "goal" ? `愿望 · ${item.targetName}` : item.label;
+          return `<span class="allocation-chip">${BudgetCore.escapeHtml(label)} ${BudgetCore.formatCurrency(item.amount)}</span>`;
+        }).join("");
+
+        return `
+          <article class="record-item">
+            <div class="record-top">
+              <div>
+                <h3>${BudgetCore.escapeHtml(income.source)}</h3>
+                <div class="record-meta">${BudgetCore.formatDate(income.date)} · ${income.allocations.length} 项分配</div>
+              </div>
+              <div class="record-amount">${BudgetCore.formatCurrency(income.amount)}</div>
+            </div>
+            ${income.note ? `<p class="record-note">${BudgetCore.escapeHtml(income.note)}</p>` : ""}
+            <div class="chip-row">${chips}</div>
+          </article>
+        `;
+      }).join("");
+    }
+
+    function renderRecordsPage() {
+      showArchivedAllocationsEl.checked = state.ui.showArchivedAllocations;
+      const archivedCount = BudgetCore.countArchivedAllocations(state);
+      clearArchivedAllocationsEl.disabled = archivedCount === 0;
+      clearArchivedAllocationsEl.textContent = archivedCount > 0
+        ? `清理全部归档记录 (${archivedCount})`
+        : "没有可清理的归档记录";
+
+      renderArchivedManager();
+      renderAllocationSummary();
+      renderRecordsList();
+      syncGoalOptions();
+      updateAllocationBalance();
+    }
+
+    async function initRecordsPage() {
+      state = await BudgetCore.bootstrapState();
+      incomeFormEl.elements.date.value = BudgetCore.getToday();
+      resetAllocationRows();
+      BudgetCore.applyTheme(state.ui.theme);
+      renderRecordsPage();
+    }
+
+    initRecordsPage();
+  </script>
+</body>
+</html>
