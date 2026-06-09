@@ -617,7 +617,7 @@
         const backgroundStyle = goal.image ? `--card-image:url('${BudgetCore.escapeHtml(goal.image)}');` : "";
 
         return `
-          <article class="goal-card catalog-goal-card ${goal.image ? "has-photo" : ""}" draggable="${mode === "active" ? "true" : "false"}" data-goal-id="${goal.id}" style="--goal-color:${goal.color};${backgroundStyle}">
+          <article class="goal-card catalog-goal-card ${goal.image ? "has-photo" : ""}" data-goal-id="${goal.id}" style="--goal-color:${goal.color};${backgroundStyle}">
             <div class="catalog-goal-card-backdrop"></div>
             <div class="catalog-goal-card-overlay"></div>
             <div class="catalog-goal-card-content">
@@ -633,7 +633,7 @@
                   <span class="goal-state-pill">${mode === "completed" ? "已完成愿望" : (goal.isPinned ? "主页主要目标" : "普通愿望")}</span>
                 </div>
                 <div class="goal-card-head-side">
-                  ${mode === "active" ? `<button class="drag-handle-button ${pendingMoveGoalId === goal.id ? "is-armed" : ""}" type="button" draggable="true" data-drag-handle data-goal-id="${goal.id}" title="拖动排序">拖动</button>` : ""}
+                  ${mode === "active" ? `<button class="drag-handle-button ${pendingMoveGoalId === goal.id ? "is-armed" : ""}" type="button" data-drag-handle data-goal-id="${goal.id}" title="拖动排序">拖动</button>` : ""}
                   <div class="progress-ring goal-card-progress-ring" style="--progress:${percent * 3.6}deg; --goal-color:${goal.color};">${percent}%</div>
                 </div>
               </div>
@@ -786,12 +786,8 @@
     }
 
     function bindDragAndDrop() {
+      const canNativeDrag = window.matchMedia ? window.matchMedia("(pointer:fine)").matches : true;
       activeGoalsGridEl.querySelectorAll(".goal-card").forEach((card) => {
-        card.addEventListener("dragend", () => {
-          draggedGoalId = null;
-          card.classList.remove("dragging");
-          activeGoalsGridEl.querySelectorAll(".goal-card").forEach((item) => item.classList.remove("drop-target"));
-        });
         card.addEventListener("dragover", (event) => {
           event.preventDefault();
           card.classList.add("drop-target");
@@ -810,16 +806,33 @@
       });
 
       activeGoalsGridEl.querySelectorAll("[data-drag-handle]").forEach((handle) => {
-        handle.addEventListener("dragstart", (event) => {
+        handle.draggable = canNativeDrag;
+        handle.addEventListener("pointerup", (event) => {
+          if (canNativeDrag && event.pointerType === "mouse") {
+            return;
+          }
+          event.preventDefault();
           event.stopPropagation();
-          draggedGoalId = handle.dataset.goalId;
-          pendingMoveGoalId = null;
-          handle.closest(".goal-card")?.classList.add("dragging");
+          const goalId = handle.dataset.goalId;
+          if (!goalId) {
+            return;
+          }
+          pendingMoveGoalId = pendingMoveGoalId === goalId ? null : goalId;
+          renderGoalsPage();
         });
-        handle.addEventListener("dragend", () => {
-          draggedGoalId = null;
-          handle.closest(".goal-card")?.classList.remove("dragging");
-        });
+        if (canNativeDrag) {
+          handle.addEventListener("dragstart", (event) => {
+            event.stopPropagation();
+            draggedGoalId = handle.dataset.goalId;
+            pendingMoveGoalId = null;
+            handle.closest(".goal-card")?.classList.add("dragging");
+          });
+          handle.addEventListener("dragend", () => {
+            draggedGoalId = null;
+            handle.closest(".goal-card")?.classList.remove("dragging");
+            activeGoalsGridEl.querySelectorAll(".goal-card").forEach((item) => item.classList.remove("drop-target"));
+          });
+        }
       });
     }
 

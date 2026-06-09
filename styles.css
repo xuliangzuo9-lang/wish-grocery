@@ -1384,6 +1384,9 @@ label span {
   font: inherit;
   font-size: 0.78rem;
   cursor: grab;
+  position: relative;
+  z-index: 3;
+  touch-action: manipulation;
 }
 
 .drag-handle-button:active {
@@ -1422,8 +1425,12 @@ label span {
   overflow: hidden;
   border-radius: 28px;
   background:
-    linear-gradient(180deg, rgba(12, 10, 8, 0.2), rgba(12, 10, 8, 0.68)),
+    linear-gradient(180deg, rgba(12, 10, 8, 0.1), rgba(12, 10, 8, 0.42)),
     linear-gradient(135deg, rgba(var(--accent-rgb), 0.16), rgba(var(--gold-rgb), 0.14));
+}
+
+.detail-hero-card.has-photo {
+  background: transparent;
 }
 
 .detail-hero-card-single {
@@ -1437,7 +1444,7 @@ label span {
   background-size: cover;
   background-repeat: no-repeat;
   opacity: 0;
-  transform: scale(1.01);
+  transform: scale(1);
   transition: opacity 220ms ease, transform 320ms ease;
 }
 
@@ -1446,11 +1453,29 @@ label span {
   transform: scale(1);
 }
 
+.detail-hero-image-haze {
+  position: absolute;
+  inset: 0;
+  background-position: center;
+  background-size: cover;
+  background-repeat: no-repeat;
+  filter: blur(18px) saturate(0.96);
+  transform: scale(1.08);
+  opacity: 0;
+  -webkit-mask-image: linear-gradient(180deg, transparent 0%, transparent 36%, rgba(0, 0, 0, 0.18) 52%, rgba(0, 0, 0, 0.76) 72%, rgba(0, 0, 0, 1) 100%);
+  mask-image: linear-gradient(180deg, transparent 0%, transparent 36%, rgba(0, 0, 0, 0.18) 52%, rgba(0, 0, 0, 0.76) 72%, rgba(0, 0, 0, 1) 100%);
+  pointer-events: none;
+}
+
+.detail-hero-card.has-photo .detail-hero-image-haze {
+  opacity: 1;
+}
+
 .detail-hero-overlay {
   position: absolute;
   inset: 0;
   background:
-    linear-gradient(180deg, rgba(14, 11, 9, 0.24) 0%, rgba(14, 11, 9, 0.62) 58%, rgba(14, 11, 9, 0.82) 100%),
+    linear-gradient(180deg, rgba(14, 11, 9, 0.02) 0%, rgba(14, 11, 9, 0.08) 24%, rgba(14, 11, 9, 0.26) 52%, rgba(14, 11, 9, 0.66) 100%),
     radial-gradient(circle at top right, rgba(255, 255, 255, 0.14), transparent 28%);
 }
 
@@ -1733,6 +1758,8 @@ label span {
 .icon-picker-chip-label {
   font-size: 0.68rem;
   color: var(--ink-soft);
+  text-align: center;
+  line-height: 1.2;
 }
 
 .icon-picker-chip:hover,
@@ -2490,6 +2517,19 @@ label span {
     width: 84px;
     height: 84px;
     justify-self: end;
+  }
+
+  .icon-picker-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .icon-picker-chip {
+    min-height: 58px;
+    padding: 8px 6px;
+  }
+
+  .icon-picker-chip-label {
+    font-size: 0.76rem;
   }
 
   .detail-hero-single {

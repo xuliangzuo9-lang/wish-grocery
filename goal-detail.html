@@ -29,6 +29,7 @@
         <section class="panel reveal detail-hero detail-hero-single">
           <div class="detail-hero-card detail-hero-card-single" id="detailHeroCard">
             <div class="detail-hero-backdrop" id="detailHeroBackdrop"></div>
+            <div class="detail-hero-image-haze" id="detailHeroImageHaze"></div>
             <div class="detail-hero-overlay"></div>
             <div class="detail-hero-topline">
               <p class="section-kicker">Goal detail</p>
@@ -98,6 +99,7 @@
                 <span>目标图标</span>
                 <input name="icon" type="text" maxlength="4" placeholder="例如：旅 / 学 / 家 / 书">
               </label>
+              <p class="form-hint" id="detailIconMeaning">当前图标含义：未匹配到图标含义</p>
               <div class="icon-picker-field">
                 <span>图标库</span>
                 <div class="icon-picker-grid" id="detailGoalIconPicker"></div>
@@ -187,6 +189,7 @@
     const detailCardDeadlineEl = document.getElementById("detailCardDeadline");
     const detailHeroCardEl = document.getElementById("detailHeroCard");
     const detailHeroBackdropEl = document.getElementById("detailHeroBackdrop");
+    const detailHeroImageHazeEl = document.getElementById("detailHeroImageHaze");
     const detailHeroStatusPillEl = document.getElementById("detailHeroStatusPill");
     const detailProgressRingEl = document.getElementById("detailProgressRing");
     const detailProgressPercentEl = document.getElementById("detailProgressPercent");
@@ -206,6 +209,7 @@
     const detailCustomIconValueEl = document.getElementById("detailCustomIconValue");
     const detailCustomIconLabelEl = document.getElementById("detailCustomIconLabel");
     const detailAddCustomIconEl = document.getElementById("detailAddCustomIcon");
+    const detailIconMeaningEl = document.getElementById("detailIconMeaning");
 
     function getGoalView() {
       return BudgetCore.getGoalById(state, goalId);
@@ -271,9 +275,19 @@
       const currentValue = String(formEl.elements.icon.value || "").trim();
       detailGoalIconPickerEl.innerHTML = BudgetCore.getGoalIconLibrary(state).map((item) => `
         <button class="icon-picker-chip ${currentValue === item.value ? "is-active" : ""}" type="button" data-icon-value="${BudgetCore.escapeHtml(item.value)}" title="${BudgetCore.escapeHtml(item.label)}" aria-label="选择${BudgetCore.escapeHtml(item.label)}图标">
-          ${BudgetCore.escapeHtml(item.value)}
+          <span class="icon-picker-chip-icon">${BudgetCore.escapeHtml(item.value)}</span>
+          <span class="icon-picker-chip-label">${BudgetCore.escapeHtml(item.label)}</span>
         </button>
       `).join("");
+      syncIconMeaning();
+    }
+
+    function syncIconMeaning() {
+      const currentValue = String(formEl.elements.icon.value || "").trim();
+      const icon = BudgetCore.getGoalIconLibrary(state).find((item) => item.value === currentValue);
+      detailIconMeaningEl.textContent = icon
+        ? `当前图标含义：${icon.label}`
+        : "当前图标含义：未匹配到图标含义";
     }
 
     function renderShelfSelectOptions(selectedShelfId = "") {
@@ -334,11 +348,13 @@
       if (renderGoal.image) {
         detailHeroCardEl.classList.add("has-photo");
         detailHeroBackdropEl.style.backgroundImage = `url("${BudgetCore.escapeHtml(renderGoal.image)}")`;
+        detailHeroImageHazeEl.style.backgroundImage = `url("${BudgetCore.escapeHtml(renderGoal.image)}")`;
         detailIntroCardEl.classList.add("has-photo");
         detailIntroBackdropEl.style.backgroundImage = `url("${BudgetCore.escapeHtml(renderGoal.image)}")`;
       } else {
         detailHeroCardEl.classList.remove("has-photo");
         detailHeroBackdropEl.style.backgroundImage = "none";
+        detailHeroImageHazeEl.style.backgroundImage = "none";
         detailIntroCardEl.classList.remove("has-photo");
         detailIntroBackdropEl.style.backgroundImage = "none";
       }

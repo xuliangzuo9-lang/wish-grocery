@@ -525,7 +525,7 @@
         const backgroundStyle = goal.image ? `--card-image:url('${BudgetCore.escapeHtml(goal.image)}');` : "";
 
         return `
-          <article class="main-target-tile ${goal.image ? "has-photo" : ""}" draggable="true" data-goal-id="${goal.id}" style="--goal-color:${goal.color};${backgroundStyle}">
+          <article class="main-target-tile ${goal.image ? "has-photo" : ""}" data-goal-id="${goal.id}" style="--goal-color:${goal.color};${backgroundStyle}">
             <div class="main-target-topline">
               <span class="goal-state-pill">主要目标</span>
               <button class="goal-action-button detail-inline-button" data-main-action="open" data-goal-id="${goal.id}" type="button">详情</button>
@@ -580,10 +580,10 @@
       const backgroundStyle = goal.image ? `--card-image:url('${BudgetCore.escapeHtml(goal.image)}');` : "";
 
       return `
-        <article class="goal-card home-goal-card ${goal.image ? "has-photo" : ""}" draggable="true" data-goal-id="${goal.id}" data-shelf-id="${goal.shelfId}" style="--goal-color:${goal.color};${backgroundStyle}">
+        <article class="goal-card home-goal-card ${goal.image ? "has-photo" : ""}" data-goal-id="${goal.id}" data-shelf-id="${goal.shelfId}" style="--goal-color:${goal.color};${backgroundStyle}">
           <div class="home-goal-topline">
             <span class="slider-sort-chip">${BudgetCore.escapeHtml(goal.shelf?.name || "愿望货架")}</span>
-            <button class="drag-handle-button ${pendingMoveGoalId === goal.id ? "is-armed" : ""}" type="button" draggable="true" data-drag-handle data-goal-id="${goal.id}" title="拖动排序">拖动</button>
+            <button class="drag-handle-button ${pendingMoveGoalId === goal.id ? "is-armed" : ""}" type="button" data-drag-handle data-goal-id="${goal.id}" title="拖动排序">拖动</button>
           </div>
           <div class="home-goal-card-main">
             <div class="home-goal-icon-chip">
@@ -626,14 +626,9 @@
     }
 
     function bindDragAndDrop() {
+      const canNativeDrag = window.matchMedia ? window.matchMedia("(pointer:fine)").matches : true;
       const cards = document.querySelectorAll(".home-goal-card, .main-target-tile[data-goal-id]");
       cards.forEach((card) => {
-        card.addEventListener("dragend", () => {
-          draggedGoalId = null;
-          card.classList.remove("dragging");
-          document.querySelectorAll(".drop-target").forEach((item) => item.classList.remove("drop-target"));
-        });
-
         card.addEventListener("dragover", (event) => {
           event.preventDefault();
           card.classList.add("drop-target");
@@ -655,7 +650,12 @@
       });
 
       document.querySelectorAll("[data-drag-handle]").forEach((handle) => {
-        handle.addEventListener("click", (event) => {
+        handle.draggable = canNativeDrag;
+        handle.addEventListener("pointerup", (event) => {
+          if (canNativeDrag && event.pointerType === "mouse") {
+            return;
+          }
+          event.preventDefault();
           event.stopPropagation();
           const goalId = handle.dataset.goalId;
           if (!goalId) {
@@ -664,18 +664,21 @@
           pendingMoveGoalId = pendingMoveGoalId === goalId ? null : goalId;
           renderHome();
         });
-        handle.addEventListener("dragstart", (event) => {
-          event.stopPropagation();
-          draggedGoalId = handle.dataset.goalId;
-          pendingMoveGoalId = null;
-          const card = handle.closest(".home-goal-card, .main-target-tile");
-          card?.classList.add("dragging");
-        });
-        handle.addEventListener("dragend", () => {
-          draggedGoalId = null;
-          const card = handle.closest(".home-goal-card, .main-target-tile");
-          card?.classList.remove("dragging");
-        });
+        if (canNativeDrag) {
+          handle.addEventListener("dragstart", (event) => {
+            event.stopPropagation();
+            draggedGoalId = handle.dataset.goalId;
+            pendingMoveGoalId = null;
+            const card = handle.closest(".home-goal-card, .main-target-tile");
+            card?.classList.add("dragging");
+          });
+          handle.addEventListener("dragend", () => {
+            draggedGoalId = null;
+            const card = handle.closest(".home-goal-card, .main-target-tile");
+            card?.classList.remove("dragging");
+            document.querySelectorAll(".drop-target").forEach((item) => item.classList.remove("drop-target"));
+          });
+        }
       });
 
       homeShelfBoardEl.querySelectorAll(".empty-shelf-slot").forEach((slot) => {
