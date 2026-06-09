@@ -26,45 +26,38 @@
       </section>
 
       <section id="detailContent" hidden>
-        <section class="panel reveal detail-hero">
-          <div class="detail-summary">
-            <div class="section-head">
-              <div>
-                <p class="section-kicker">Goal detail</p>
-                <h1 id="detailGoalName">愿望详情</h1>
-                <p class="page-intro" id="detailGoalTip">这里可以直接修改这个愿望的数据，也能完成、删除或重新开启它。</p>
-              </div>
-            </div>
-            <div class="detail-stats">
-              <div class="detail-stat">
-                <span class="muted">当前状态</span>
-                <strong id="detailGoalStatus">活跃目标</strong>
-              </div>
-              <div class="detail-stat">
-                <span class="muted">已攒金额</span>
-                <strong id="detailGoalSaved">0 元</strong>
-              </div>
-              <div class="detail-stat">
-                <span class="muted">还差多少</span>
-                <strong id="detailGoalRemaining">0 元</strong>
-              </div>
-            </div>
-          </div>
-          <div class="panel detail-hero-card" id="detailHeroCard">
+        <section class="panel reveal detail-hero detail-hero-single">
+          <div class="detail-hero-card detail-hero-card-single" id="detailHeroCard">
             <div class="detail-hero-backdrop" id="detailHeroBackdrop"></div>
-            <div class="detail-hero-card-head">
-              <div class="detail-hero-card-copy">
-                <span class="detail-hero-status-pill" id="detailHeroStatusPill">活跃目标</span>
-                <h3 id="detailCardName">-</h3>
-                <small id="detailCardDeadline">不设计划时间</small>
-              </div>
-              <div class="detail-progress-wrap">
-                <div class="progress-ring detail-progress-ring" id="detailProgressRing">0%</div>
-                <span class="detail-progress-label">当前进度</span>
-              </div>
+            <div class="detail-hero-overlay"></div>
+            <div class="detail-hero-topline">
+              <p class="section-kicker">Goal detail</p>
+              <span class="detail-hero-status-pill" id="detailHeroStatusPill">活跃目标</span>
             </div>
-            <div class="detail-hero-visual" id="detailHeroVisual">愿</div>
-            <p class="goal-tip" id="detailMetaTip"></p>
+            <div class="detail-hero-stack">
+              <div class="detail-hero-copy detail-hero-copy-single">
+                <div class="detail-hero-visual" id="detailHeroVisual">愿</div>
+                <div class="detail-hero-text-block">
+                  <h1 id="detailGoalName">愿望详情</h1>
+                  <p class="page-intro detail-hero-intro" id="detailGoalTip">这里可以直接修改这个愿望的数据，也能完成、删除或重新开启它。</p>
+                  <small class="detail-hero-deadline" id="detailCardDeadline">不设计划时间</small>
+                </div>
+              </div>
+              <div class="detail-gear-showcase">
+                <div class="progress-ring detail-progress-ring detail-gear-ring" id="detailProgressRing">
+                  <div class="detail-gear-percent" id="detailProgressPercent">0%</div>
+                  <div class="detail-gear-core">
+                    <span>当前状态</span>
+                    <strong id="detailGoalStatus">活跃目标</strong>
+                    <span>已攒金额</span>
+                    <strong id="detailGoalSaved">0 元</strong>
+                    <span>还差多少</span>
+                    <strong id="detailGoalRemaining">0 元</strong>
+                  </div>
+                </div>
+              </div>
+              <p class="goal-tip detail-hero-note" id="detailMetaTip"></p>
+            </div>
           </div>
         </section>
 
@@ -90,6 +83,10 @@
                 <input name="baseSaved" type="number" min="0" step="1">
               </label>
               <label>
+                <span>所属货架</span>
+                <select name="shelfId" id="detailGoalShelfSelect"></select>
+              </label>
+              <label>
                 <span>目标图标</span>
                 <input name="icon" type="text" maxlength="4" placeholder="例如：旅 / 学 / 家 / 书">
               </label>
@@ -104,7 +101,7 @@
               <label class="image-upload-stack">
                 <span>本地上传图片</span>
                 <input id="detailGoalImageFile" type="file" accept="image/*">
-                <small class="form-hint">手机可直接从相册选图，电脑可从本地文件选图，选好后会自动填入上面的图片内容。</small>
+                <small class="form-hint">手机可直接从相册选图，电脑可以从本地文件选图，选好后会自动填入上面的图片内容。</small>
               </label>
               <label class="toggle-chip">
                 <input name="hasDeadline" type="checkbox" checked>
@@ -165,12 +162,12 @@
     const detailGoalStatusEl = document.getElementById("detailGoalStatus");
     const detailGoalSavedEl = document.getElementById("detailGoalSaved");
     const detailGoalRemainingEl = document.getElementById("detailGoalRemaining");
-    const detailCardNameEl = document.getElementById("detailCardName");
     const detailCardDeadlineEl = document.getElementById("detailCardDeadline");
     const detailHeroCardEl = document.getElementById("detailHeroCard");
     const detailHeroBackdropEl = document.getElementById("detailHeroBackdrop");
     const detailHeroStatusPillEl = document.getElementById("detailHeroStatusPill");
     const detailProgressRingEl = document.getElementById("detailProgressRing");
+    const detailProgressPercentEl = document.getElementById("detailProgressPercent");
     const detailHeroVisualEl = document.getElementById("detailHeroVisual");
     const detailMetaTipEl = document.getElementById("detailMetaTip");
     const detailTogglePinEl = document.getElementById("detailTogglePin");
@@ -179,6 +176,7 @@
     const detailDeleteGoalEl = document.getElementById("detailDeleteGoal");
     const detailGoalImageFileEl = document.getElementById("detailGoalImageFile");
     const detailGoalIconPickerEl = document.getElementById("detailGoalIconPicker");
+    const detailGoalShelfSelectEl = document.getElementById("detailGoalShelfSelect");
 
     function getGoalView() {
       return BudgetCore.getGoalById(state, goalId);
@@ -202,6 +200,7 @@
         name: editingDraft.name || goal.name,
         target,
         baseSaved,
+        shelfId: editingDraft.shelfId || goal.shelfId,
         icon: editingDraft.icon || goal.icon,
         image: editingDraft.image || "",
         hasDeadline: editingDraft.hasDeadline,
@@ -220,6 +219,7 @@
         name: String(formEl.elements.name.value || "").trim(),
         target: Number(formEl.elements.target.value || 0),
         baseSaved: Number(formEl.elements.baseSaved.value || 0),
+        shelfId: String(formEl.elements.shelfId.value || "").trim(),
         icon: String(formEl.elements.icon.value || "").trim(),
         image: String(formEl.elements.image.value || "").trim(),
         hasDeadline: formEl.elements.hasDeadline.checked,
@@ -247,10 +247,19 @@
       `).join("");
     }
 
+    function renderShelfSelectOptions(selectedShelfId = "") {
+      const shelves = BudgetCore.getWishShelves(state);
+      detailGoalShelfSelectEl.innerHTML = shelves.map((shelf) => `
+        <option value="${shelf.id}" ${selectedShelfId === shelf.id ? "selected" : ""}>${BudgetCore.escapeHtml(shelf.name)}</option>
+      `).join("");
+    }
+
     function fillForm(goal) {
+      renderShelfSelectOptions(goal.shelfId || BudgetCore.getWishShelves(state)[0]?.id || "");
       formEl.elements.name.value = goal.name;
       formEl.elements.target.value = String(goal.target);
       formEl.elements.baseSaved.value = String(goal.baseSaved);
+      formEl.elements.shelfId.value = goal.shelfId || "";
       formEl.elements.icon.value = goal.icon || "";
       formEl.elements.image.value = goal.image || "";
       formEl.elements.hasDeadline.checked = goal.hasDeadline;
@@ -271,6 +280,8 @@
 
       if (!editingDraft) {
         fillForm(goal);
+      } else {
+        renderShelfSelectOptions(editingDraft.shelfId || goal.shelfId || BudgetCore.getWishShelves(state)[0]?.id || "");
       }
 
       const renderGoal = getRenderableGoal();
@@ -283,13 +294,13 @@
       detailGoalStatusEl.textContent = renderGoal.status === "completed" ? "已完成目标" : (renderGoal.isPinned ? "主要目标" : "活跃目标");
       detailGoalSavedEl.textContent = BudgetCore.formatCurrency(renderGoal.saved);
       detailGoalRemainingEl.textContent = BudgetCore.formatCurrency(renderGoal.remaining);
-      detailCardNameEl.textContent = renderGoal.name;
       detailCardDeadlineEl.textContent = renderGoal.hasDeadline && renderGoal.deadline ? `计划时间：${BudgetCore.formatDate(renderGoal.deadline)}` : "不设计划时间";
       detailHeroStatusPillEl.textContent = renderGoal.status === "completed" ? "已完成目标" : (renderGoal.isPinned ? "主要目标" : "活跃目标");
-      detailProgressRingEl.textContent = `${percent}%`;
+      detailProgressPercentEl.textContent = `${percent}%`;
       detailProgressRingEl.style.setProperty("--progress", `${percent * 3.6}deg`);
       detailProgressRingEl.style.setProperty("--goal-color", renderGoal.color);
       detailHeroCardEl.style.setProperty("--detail-goal-color", renderGoal.color);
+
       if (renderGoal.image) {
         detailHeroCardEl.classList.add("has-photo");
         detailHeroBackdropEl.style.backgroundImage = `url("${BudgetCore.escapeHtml(renderGoal.image)}")`;
@@ -297,6 +308,7 @@
         detailHeroCardEl.classList.remove("has-photo");
         detailHeroBackdropEl.style.backgroundImage = "none";
       }
+
       detailHeroVisualEl.innerHTML = BudgetCore.escapeHtml(renderGoal.icon || "愿");
       detailMetaTipEl.textContent = renderGoal.note ? `${renderGoal.note} · ${renderGoal.tip}` : renderGoal.tip;
 

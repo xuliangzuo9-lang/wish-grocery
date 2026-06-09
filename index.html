@@ -11,7 +11,7 @@
     <nav class="site-nav">
       <div class="brand-mark">
         <strong>愿望杂货铺</strong>
-        <span>把攒钱、分配和愿望推进放进同一个小仪表盘里</span>
+        <span>把愿望、货架和攒钱进度集中放在一个更短更清晰的首页</span>
       </div>
       <div class="nav-links">
         <a class="nav-link active" href="index.html">主页</a>
@@ -19,49 +19,49 @@
         <a class="nav-link" href="records.html">收入记录</a>
       </div>
       <div class="nav-utilities">
-        <a class="ghost-button small" id="adminEntryButton" href="admin.html" hidden>管理员后台</a>
+        <a class="ghost-button small" href="auth.html?redirect=%2Fadmin.html">管理员后台</a>
         <button class="ghost-button small" id="toggleThemePanel" type="button">主题颜色</button>
         <section class="theme-popover theme-popover-compact" id="themePopover" hidden>
           <div class="theme-popover-head">
-            <strong>主页配色</strong>
+            <strong>整站配色</strong>
             <button class="ghost-button small" id="closeThemePanel" type="button">收起</button>
           </div>
-          <p class="muted theme-popover-copy">这里改的是整站主题颜色，主页、愿望管理和收入记录会同步变化。</p>
+          <p class="muted theme-popover-copy">这里调整的是整站主题颜色，主页、愿望管理和收入记录会一起同步。</p>
           <div class="theme-swatch-grid">
             <div class="theme-swatch-field">
               <span>主色</span>
               <button class="theme-swatch-button" type="button" data-theme-trigger="accent">
-                <span class="theme-swatch-dot" id="previewHomeThemeAccent"></span>
+                <span class="theme-swatch-dot" id="previewThemeAccent"></span>
               </button>
-              <input id="homeThemeAccent" class="theme-picker-input" type="color">
+              <input id="themeAccent" class="theme-picker-input" type="color">
             </div>
             <div class="theme-swatch-field">
               <span>深主色</span>
               <button class="theme-swatch-button" type="button" data-theme-trigger="accentDeep">
-                <span class="theme-swatch-dot" id="previewHomeThemeAccentDeep"></span>
+                <span class="theme-swatch-dot" id="previewThemeAccentDeep"></span>
               </button>
-              <input id="homeThemeAccentDeep" class="theme-picker-input" type="color">
+              <input id="themeAccentDeep" class="theme-picker-input" type="color">
             </div>
             <div class="theme-swatch-field">
               <span>点缀色</span>
               <button class="theme-swatch-button" type="button" data-theme-trigger="gold">
-                <span class="theme-swatch-dot" id="previewHomeThemeGold"></span>
+                <span class="theme-swatch-dot" id="previewThemeGold"></span>
               </button>
-              <input id="homeThemeGold" class="theme-picker-input" type="color">
+              <input id="themeGold" class="theme-picker-input" type="color">
             </div>
             <div class="theme-swatch-field">
               <span>背景起点</span>
               <button class="theme-swatch-button" type="button" data-theme-trigger="bgStart">
-                <span class="theme-swatch-dot" id="previewHomeThemeBgStart"></span>
+                <span class="theme-swatch-dot" id="previewThemeBgStart"></span>
               </button>
-              <input id="homeThemeBgStart" class="theme-picker-input" type="color">
+              <input id="themeBgStart" class="theme-picker-input" type="color">
             </div>
             <div class="theme-swatch-field">
               <span>背景终点</span>
               <button class="theme-swatch-button" type="button" data-theme-trigger="bgEnd">
-                <span class="theme-swatch-dot" id="previewHomeThemeBgEnd"></span>
+                <span class="theme-swatch-dot" id="previewThemeBgEnd"></span>
               </button>
-              <input id="homeThemeBgEnd" class="theme-picker-input" type="color">
+              <input id="themeBgEnd" class="theme-picker-input" type="color">
             </div>
           </div>
           <div class="theme-popover-actions">
@@ -73,52 +73,49 @@
 
     <main class="dashboard dashboard-tight">
       <section class="panel reveal panel-tight hero-fusion-panel">
-        <div class="hero-fusion-layout">
+        <div class="hero-fusion-layout home-hero-layout">
           <div class="hero-focus-block">
-            <p class="section-kicker">Today focus</p>
-            <h1>先看最想实现的三个愿望</h1>
-            <p class="hero-text hero-text-compact">主页第一眼就先看到今日激励和三个主要目标，保持简洁，也更像一个真正的愿望仪表盘。</p>
-            <div class="quote-card quote-inline quote-inline-compact">
+            <article class="quote-card quote-card-home">
               <div class="quote-card-head">
-                <strong>今日激励</strong>
+                <div>
+                  <p class="section-kicker quote-inline quote-inline-compact">Today boost</p>
+                  <h2>今日激励</h2>
+                </div>
                 <button class="ghost-button small" id="refreshQuoteButton" type="button">换一句</button>
               </div>
-              <p id="heroQuoteText">今天的每一笔克制，都会把你再送近一点。</p>
-              <footer id="heroQuoteAuthor">愿望杂货铺</footer>
-            </div>
+              <p id="quoteText">正在为你准备新的激励语...</p>
+              <footer id="quoteAuthor">愿望杂货铺</footer>
+            </article>
+            <div class="hero-mini-metrics hero-mini-metrics-compact" id="heroMiniMetrics"></div>
           </div>
 
-          <div class="hero-fusion-main">
-            <div class="section-head compact hero-fusion-main-head">
+          <section class="hero-highlight hero-highlight-compact">
+            <div class="hero-highlight-head">
               <div>
-                <p class="section-kicker">Main goals</p>
-                <h2>主要目标</h2>
-                <p class="muted compact-note-inline" id="heroGoalCountLabel">0 / 3 已置顶</p>
-              </div>
-              <div class="section-actions">
-                <a class="ghost-button small" href="goals.html">去管理主要目标</a>
+                <p class="section-kicker">Top wishes</p>
+                <h2>最想实现的三个愿望</h2>
+                <p class="compact-note-inline muted">这里展示置顶的 3 个主要目标，支持拖动换顺序，也可以直接进入详情。</p>
               </div>
             </div>
-            <div class="hero-priority-grid compact-grid" id="heroPriorityGrid"></div>
-          </div>
+            <div class="main-target-grid" id="mainGoalsGrid"></div>
+          </section>
         </div>
       </section>
 
       <section class="panel reveal panel-tight">
         <div class="section-head compact">
           <div>
-            <p class="section-kicker">Wish board</p>
-            <h2>愿望进度板</h2>
-            <p class="muted compact-note-inline">这里和愿望管理页保持同一顺序。你可以左右拖动换位，也可以直接新增愿望。</p>
+            <p class="section-kicker">Wish shelves</p>
+            <h2>愿望货架</h2>
+            <p class="page-intro page-intro-compact">主页里可以直接改货架名字和颜色，也可以在新增愿望时直接选择放入哪一个货架。</p>
           </div>
-          <div class="section-actions">
-            <a class="ghost-button small" href="goals.html">查看全部愿望</a>
-            <a class="ghost-button small" href="records.html">查看收入记录</a>
+          <div class="section-actions shelf-row-controls">
+            <label>
+              <span>货架行数</span>
+              <input class="wish-shelf-select" id="homeShelfRowsInput" type="number" min="1" max="999" step="1" value="2" inputmode="numeric">
+            </label>
+            <a class="ghost-button small" href="goals.html">打开愿望管理</a>
           </div>
-        </div>
-
-        <div class="section-actions mobile-quick-goal-action">
-          <button class="solid-button small" id="openQuickGoalFormButton" type="button">新增愿望</button>
         </div>
 
         <details class="quick-goal-panel" id="quickGoalPanel">
@@ -126,7 +123,7 @@
           <form class="quick-goal-form" id="quickGoalForm">
             <label>
               <span>愿望名称</span>
-              <input name="name" type="text" placeholder="例如：去旅游" required>
+              <input name="name" type="text" placeholder="例如：秋天去旅行" required>
             </label>
             <label>
               <span>目标金额</span>
@@ -137,60 +134,56 @@
               <input name="baseSaved" type="number" min="0" step="1" placeholder="0">
             </label>
             <label>
-              <span>图标</span>
-              <input name="icon" type="text" maxlength="4" placeholder="旅 / 书 / 家">
+              <span>放入货架</span>
+              <select name="shelfId" id="quickGoalShelfSelect"></select>
             </label>
-            <div class="quick-goal-form-full icon-picker-field">
+            <label>
+              <span>愿望图标</span>
+              <input name="icon" type="text" maxlength="4" placeholder="例如：✈️">
+            </label>
+            <label>
+              <span>愿望颜色</span>
+              <input name="color" type="color" value="#d08e73">
+            </label>
+
+            <div class="icon-picker-field quick-goal-form-full">
               <span>图标库</span>
               <div class="icon-picker-grid" id="quickGoalIconPicker"></div>
             </div>
+
             <label class="quick-goal-form-full">
-              <span>图片 URL</span>
-              <input name="image" type="text" placeholder="可选：给愿望加一张图片">
+              <span>愿望图片 URL</span>
+              <input name="image" type="text" placeholder="可以放一张代表这个愿望的图片链接">
             </label>
-            <label class="quick-goal-form-full image-upload-stack">
+            <label class="image-upload-stack quick-goal-form-full">
               <span>本地上传图片</span>
               <input id="quickGoalImageFile" type="file" accept="image/*">
-              <small class="form-hint">手机和电脑都可以直接选图，选好后会自动填入上面的图片地址。</small>
+              <small class="form-hint">手机可以从相册选图，电脑可以从本地上传，选好后会自动填入上面的图片内容。</small>
             </label>
+
             <label class="toggle-chip">
-              <input name="hasDeadline" type="checkbox">
+              <input name="hasDeadline" type="checkbox" checked>
               <span>设置计划时间</span>
             </label>
             <label>
               <span>计划日期</span>
               <input name="deadline" type="date">
             </label>
+
             <label class="quick-goal-form-full">
-              <span>备注</span>
-              <textarea name="note" rows="2" placeholder="简单写一下这个愿望为什么重要"></textarea>
+              <span>愿望备注</span>
+              <textarea name="note" rows="3" placeholder="简单介绍一下这个愿望为什么重要"></textarea>
             </label>
-            <label>
-              <span>颜色</span>
-              <input name="color" type="color" value="#d08e73">
-            </label>
-            <div class="quick-goal-form-actions quick-goal-form-full">
+
+            <div class="quick-goal-form-full quick-goal-form-actions">
               <button class="solid-button" type="submit">保存愿望</button>
-              <a class="ghost-button" href="goals.html#goalEditor">去愿望管理页完整编辑</a>
+              <a class="ghost-button" href="goals.html#goalEditor">去愿望管理做完整编辑</a>
             </div>
-            <p class="form-hint quick-goal-form-full" id="quickGoalFormHint">新建后会马上同步到主页愿望进度板。</p>
+            <p class="form-hint quick-goal-form-full" id="quickGoalHint">新增后会同步出现在主页货架、愿望管理和单个愿望详情页里。</p>
           </form>
         </details>
 
-        <div class="slider-shell">
-          <div class="slider-toolbar">
-            <p class="muted">点击卡片可以进入对应愿望详情，拖动时可以直接跨很多项换位置。</p>
-            <div class="section-actions">
-              <label>
-                <span>货架行数</span>
-                <input class="wish-shelf-select" id="homeWishShelfRowsSelect" type="number" min="1" max="999" step="1" value="2" inputmode="numeric">
-              </label>
-              <button class="ghost-button small" id="scrollSliderPrev" type="button">向左看</button>
-              <button class="ghost-button small" id="scrollSliderNext" type="button">向右看</button>
-            </div>
-          </div>
-          <div class="wish-shelf-board" id="homeGoalSlider"></div>
-        </div>
+        <div class="wish-shelf-board" id="homeShelfBoard"></div>
       </section>
 
       <section class="panel reveal panel-tight metrics-panel">
@@ -198,27 +191,9 @@
           <div>
             <p class="section-kicker">Overview</p>
             <h2>数据概览</h2>
-            <p class="muted compact-note-inline">这里只保留最基础的累计数据，方便快速扫一眼。</p>
           </div>
         </div>
-        <div class="hero-mini-metrics hero-mini-metrics-compact metrics-grid">
-          <div class="compact-panel">
-            <span>活跃愿望</span>
-            <strong id="heroGoalCount">0</strong>
-          </div>
-          <div class="compact-panel">
-            <span>收入记录</span>
-            <strong id="heroIncomeCount">0</strong>
-          </div>
-          <div class="compact-panel">
-            <span>累计收入</span>
-            <strong id="compactTotalIncome">0 元</strong>
-          </div>
-          <div class="compact-panel">
-            <span>进入愿望的钱</span>
-            <strong id="compactGoalMoney">0 元</strong>
-          </div>
-        </div>
+        <div class="metrics metrics-grid" id="metricsGrid"></div>
       </section>
     </main>
   </div>
@@ -234,53 +209,38 @@
     };
 
     let state = BudgetCore.loadState();
-    let draggedPinnedGoalId = null;
-    let draggedSliderGoalId = null;
+    let draggedGoalId = null;
+    let currentQuoteText = "";
 
-    const priorityGridEl = document.getElementById("heroPriorityGrid");
-    const sliderTrackEl = document.getElementById("homeGoalSlider");
-    const heroGoalCountLabelEl = document.getElementById("heroGoalCountLabel");
     const themePopoverEl = document.getElementById("themePopover");
-    const adminEntryButtonEl = document.getElementById("adminEntryButton");
-    const quickGoalPanelEl = document.getElementById("quickGoalPanel");
+    const quoteTextEl = document.getElementById("quoteText");
+    const quoteAuthorEl = document.getElementById("quoteAuthor");
+    const heroMiniMetricsEl = document.getElementById("heroMiniMetrics");
+    const mainGoalsGridEl = document.getElementById("mainGoalsGrid");
+    const metricsGridEl = document.getElementById("metricsGrid");
+    const homeShelfBoardEl = document.getElementById("homeShelfBoard");
+    const homeShelfRowsInputEl = document.getElementById("homeShelfRowsInput");
     const quickGoalFormEl = document.getElementById("quickGoalForm");
-    const quickGoalFormHintEl = document.getElementById("quickGoalFormHint");
+    const quickGoalHintEl = document.getElementById("quickGoalHint");
     const quickGoalImageFileEl = document.getElementById("quickGoalImageFile");
-    const homeWishShelfRowsSelectEl = document.getElementById("homeWishShelfRowsSelect");
-    const openQuickGoalFormButtonEl = document.getElementById("openQuickGoalFormButton");
-    const quoteTextEl = document.getElementById("heroQuoteText");
-    const quoteAuthorEl = document.getElementById("heroQuoteAuthor");
+    const quickGoalShelfSelectEl = document.getElementById("quickGoalShelfSelect");
     const quickGoalIconPickerEl = document.getElementById("quickGoalIconPicker");
-    let quoteDeck = [];
-    let lastRenderedQuoteText = "";
 
     const themeInputs = {
-      accent: document.getElementById("homeThemeAccent"),
-      accentDeep: document.getElementById("homeThemeAccentDeep"),
-      gold: document.getElementById("homeThemeGold"),
-      bgStart: document.getElementById("homeThemeBgStart"),
-      bgEnd: document.getElementById("homeThemeBgEnd")
+      accent: document.getElementById("themeAccent"),
+      accentDeep: document.getElementById("themeAccentDeep"),
+      gold: document.getElementById("themeGold"),
+      bgStart: document.getElementById("themeBgStart"),
+      bgEnd: document.getElementById("themeBgEnd")
     };
 
     const themePreviewDots = {
-      accent: document.getElementById("previewHomeThemeAccent"),
-      accentDeep: document.getElementById("previewHomeThemeAccentDeep"),
-      gold: document.getElementById("previewHomeThemeGold"),
-      bgStart: document.getElementById("previewHomeThemeBgStart"),
-      bgEnd: document.getElementById("previewHomeThemeBgEnd")
+      accent: document.getElementById("previewThemeAccent"),
+      accentDeep: document.getElementById("previewThemeAccentDeep"),
+      gold: document.getElementById("previewThemeGold"),
+      bgStart: document.getElementById("previewThemeBgStart"),
+      bgEnd: document.getElementById("previewThemeBgEnd")
     };
-
-    document.getElementById("scrollSliderPrev").addEventListener("click", () => {
-      sliderTrackEl.querySelectorAll(".wish-shelf-track").forEach((row) => {
-        row.scrollBy({ left: -320, behavior: "smooth" });
-      });
-    });
-
-    document.getElementById("scrollSliderNext").addEventListener("click", () => {
-      sliderTrackEl.querySelectorAll(".wish-shelf-track").forEach((row) => {
-        row.scrollBy({ left: 320, behavior: "smooth" });
-      });
-    });
 
     document.getElementById("toggleThemePanel").addEventListener("click", () => {
       themePopoverEl.hidden = !themePopoverEl.hidden;
@@ -294,39 +254,7 @@
       BudgetCore.updateTheme(state, SOFT_THEME);
       state = BudgetCore.loadState();
       syncThemeInputs();
-      BudgetCore.applyTheme(state.ui.theme);
-    });
-
-    document.getElementById("refreshQuoteButton").addEventListener("click", () => {
-      renderQuote(true);
-    });
-
-    openQuickGoalFormButtonEl.addEventListener("click", () => {
-      quickGoalPanelEl.open = true;
-      quickGoalFormEl.elements.name.focus();
-      quickGoalPanelEl.scrollIntoView({ behavior: "smooth", block: "start" });
-    });
-
-    function syncWishShelfRowsFromInput() {
-      BudgetCore.updateWishShelfRows(state, Number(homeWishShelfRowsSelectEl.value || 2));
-      state = BudgetCore.loadState();
-      renderHomePage();
-    }
-
-    homeWishShelfRowsSelectEl.addEventListener("change", syncWishShelfRowsFromInput);
-    homeWishShelfRowsSelectEl.addEventListener("input", syncWishShelfRowsFromInput);
-
-    quickGoalFormEl.elements.hasDeadline.addEventListener("change", syncQuickGoalDeadlineState);
-    quickGoalFormEl.elements.icon.addEventListener("input", syncQuickGoalIconPicker);
-
-    quickGoalImageFileEl.addEventListener("change", async () => {
-      const file = quickGoalImageFileEl.files?.[0];
-      if (!file) {
-        return;
-      }
-      const imageDataUrl = await readFileAsDataUrl(file);
-      quickGoalFormEl.elements.image.value = imageDataUrl;
-      quickGoalFormHintEl.textContent = "本地图片已经加上了，保存后会同步显示在愿望卡片里。";
+      renderHome();
     });
 
     document.addEventListener("click", (event) => {
@@ -362,191 +290,23 @@
       });
     });
 
-    quickGoalFormEl.addEventListener("submit", async (event) => {
-      event.preventDefault();
-
-      const draft = {
-        name: String(quickGoalFormEl.elements.name.value || "").trim(),
-        target: Number(quickGoalFormEl.elements.target.value || 0),
-        baseSaved: Number(quickGoalFormEl.elements.baseSaved.value || 0),
-        icon: String(quickGoalFormEl.elements.icon.value || "").trim(),
-        image: String(quickGoalFormEl.elements.image.value || "").trim(),
-        hasDeadline: quickGoalFormEl.elements.hasDeadline.checked,
-        deadline: String(quickGoalFormEl.elements.deadline.value || ""),
-        note: String(quickGoalFormEl.elements.note.value || "").trim(),
-        color: String(quickGoalFormEl.elements.color.value || state.ui.theme.accent || BudgetCore.palette[0])
-      };
-
-      if (!draft.name || draft.target <= 0) {
-        quickGoalFormHintEl.textContent = "请先填写愿望名称和目标金额。";
-        return;
-      }
-
-      if (draft.hasDeadline && !draft.deadline) {
-        quickGoalFormHintEl.textContent = "你开启了计划时间，请再选择一个日期。";
-        return;
-      }
-
-      BudgetCore.addGoal(state, draft);
-      state = BudgetCore.loadState();
-      renderHomePage();
-      await BudgetCore.syncRemoteStateNow(state);
-      quickGoalFormHintEl.textContent = "已保存，这个愿望现在已经出现在主页愿望进度板里了。";
-      quickGoalPanelEl.open = false;
-      resetQuickGoalForm();
+    document.getElementById("refreshQuoteButton").addEventListener("click", () => {
+      renderQuote(true);
     });
 
-    priorityGridEl.addEventListener("click", (event) => {
-      const button = event.target.closest("[data-home-action]");
-      if (!button) {
+    homeShelfRowsInputEl.addEventListener("change", syncShelfRows);
+    homeShelfRowsInputEl.addEventListener("input", syncShelfRows);
+
+    quickGoalFormEl.elements.icon.addEventListener("input", renderQuickGoalIconPicker);
+
+    quickGoalImageFileEl.addEventListener("change", async () => {
+      const file = quickGoalImageFileEl.files?.[0];
+      if (!file) {
         return;
       }
-
-      const goalId = button.dataset.goalId;
-      const action = button.dataset.homeAction;
-      if (!goalId || !action) {
-        return;
-      }
-
-      const activeGoals = getActiveGoalViews();
-      const pinnedGoals = activeGoals.filter((goal) => goal.isPinned).slice(0, BudgetCore.MAX_PINNED_GOALS);
-      const currentIndex = pinnedGoals.findIndex((goal) => goal.id === goalId);
-      const nextIndex = action === "move-left" ? currentIndex - 1 : currentIndex + 1;
-      const targetPinnedGoal = pinnedGoals[nextIndex];
-      if (!targetPinnedGoal) {
-        return;
-      }
-
-      const targetActiveIndex = activeGoals.findIndex((goal) => goal.id === targetPinnedGoal.id);
-      BudgetCore.moveGoalToIndex(state, goalId, targetActiveIndex);
-      state = BudgetCore.loadState();
-      renderHomePage();
-    });
-
-    priorityGridEl.addEventListener("dragstart", (event) => {
-      const handle = event.target.closest("[data-drag-handle]");
-      const card = handle?.closest(".priority-card[data-goal-id]");
-      if (!card) {
-        return;
-      }
-      draggedPinnedGoalId = card.dataset.goalId;
-      event.dataTransfer.effectAllowed = "move";
-      event.dataTransfer.setData("text/plain", draggedPinnedGoalId || "");
-      card.classList.add("dragging");
-    });
-
-    priorityGridEl.addEventListener("dragend", () => {
-      draggedPinnedGoalId = null;
-      priorityGridEl.querySelectorAll(".priority-card").forEach((card) => {
-        card.classList.remove("dragging", "drop-target");
-      });
-    });
-
-    priorityGridEl.addEventListener("dragover", (event) => {
-      const card = event.target.closest(".priority-card[data-goal-id]");
-      if (!card || !draggedPinnedGoalId) {
-        return;
-      }
-      event.preventDefault();
-      event.dataTransfer.dropEffect = "move";
-      priorityGridEl.querySelectorAll(".priority-card").forEach((item) => item.classList.remove("drop-target"));
-      card.classList.add("drop-target");
-    });
-
-    priorityGridEl.addEventListener("drop", (event) => {
-      const card = event.target.closest(".priority-card[data-goal-id]");
-      if (!card || !draggedPinnedGoalId) {
-        return;
-      }
-      event.preventDefault();
-      const targetGoalId = card.dataset.goalId;
-      if (!targetGoalId || targetGoalId === draggedPinnedGoalId) {
-        return;
-      }
-
-      const activeGoals = getActiveGoalViews();
-      const targetActiveIndex = activeGoals.findIndex((goal) => goal.id === targetGoalId);
-      if (targetActiveIndex < 0) {
-        return;
-      }
-
-      BudgetCore.moveGoalToIndex(state, draggedPinnedGoalId, targetActiveIndex);
-      state = BudgetCore.loadState();
-      renderHomePage();
-    });
-
-    sliderTrackEl.addEventListener("click", (event) => {
-      const card = event.target.closest(".slider-card[data-goal-id]");
-      if (!card) {
-        return;
-      }
-      const goalId = card.dataset.goalId;
-      if (!goalId) {
-        return;
-      }
-      window.location.href = `goal-detail.html?id=${encodeURIComponent(goalId)}`;
-    });
-
-    sliderTrackEl.addEventListener("keydown", (event) => {
-      const card = event.target.closest(".slider-card[data-goal-id]");
-      if (!card) {
-        return;
-      }
-      if (event.key === "Enter" || event.key === " ") {
-        event.preventDefault();
-        window.location.href = `goal-detail.html?id=${encodeURIComponent(card.dataset.goalId)}`;
-      }
-    });
-
-    sliderTrackEl.addEventListener("dragstart", (event) => {
-      const card = event.target.closest(".slider-card[data-goal-id]");
-      if (!card) {
-        return;
-      }
-      draggedSliderGoalId = card.dataset.goalId;
-      event.dataTransfer.effectAllowed = "move";
-      event.dataTransfer.setData("text/plain", draggedSliderGoalId || "");
-      card.classList.add("dragging");
-    });
-
-    sliderTrackEl.addEventListener("dragend", () => {
-      draggedSliderGoalId = null;
-      sliderTrackEl.querySelectorAll(".slider-card").forEach((card) => {
-        card.classList.remove("dragging", "drop-target");
-      });
-    });
-
-    sliderTrackEl.addEventListener("dragover", (event) => {
-      const card = event.target.closest(".slider-card[data-goal-id]");
-      if (!card || !draggedSliderGoalId) {
-        return;
-      }
-      event.preventDefault();
-      event.dataTransfer.dropEffect = "move";
-      sliderTrackEl.querySelectorAll(".slider-card").forEach((item) => item.classList.remove("drop-target"));
-      card.classList.add("drop-target");
-    });
-
-    sliderTrackEl.addEventListener("drop", (event) => {
-      const card = event.target.closest(".slider-card[data-goal-id]");
-      if (!card || !draggedSliderGoalId) {
-        return;
-      }
-      event.preventDefault();
-      const targetGoalId = card.dataset.goalId;
-      if (!targetGoalId || targetGoalId === draggedSliderGoalId) {
-        return;
-      }
-
-      const activeGoals = getActiveGoalViews();
-      const targetIndex = activeGoals.findIndex((goal) => goal.id === targetGoalId);
-      if (targetIndex < 0) {
-        return;
-      }
-
-      BudgetCore.moveGoalToIndex(state, draggedSliderGoalId, targetIndex);
-      state = BudgetCore.loadState();
-      renderHomePage();
+      const imageDataUrl = await readFileAsDataUrl(file);
+      quickGoalFormEl.elements.image.value = imageDataUrl;
+      quickGoalHintEl.textContent = "图片已经加上了，保存后会显示在货架卡片和愿望详情里。";
     });
 
     quickGoalIconPickerEl.addEventListener("click", (event) => {
@@ -555,21 +315,121 @@
         return;
       }
       quickGoalFormEl.elements.icon.value = button.dataset.iconValue || "";
-      syncQuickGoalIconPicker();
+      renderQuickGoalIconPicker();
     });
 
-    window.addEventListener("pageshow", () => {
-      renderQuote(true);
-      renderHomePage();
-      syncAdminEntry();
-    });
-
-    document.addEventListener("visibilitychange", () => {
-      if (!document.hidden) {
+    quickGoalFormEl.addEventListener("submit", (event) => {
+      event.preventDefault();
+      const draft = readQuickGoalDraft();
+      if (!draft.name || draft.target <= 0) {
+        quickGoalHintEl.textContent = "请先填写愿望名称和目标金额。";
         return;
       }
-      quoteDeck = [];
+      if (draft.hasDeadline && !draft.deadline) {
+        quickGoalHintEl.textContent = "你开启了计划时间，请再选择一个日期。";
+        return;
+      }
+      BudgetCore.addGoal(state, draft);
+      state = BudgetCore.loadState();
+      resetQuickGoalForm();
+      renderHome();
+      document.getElementById("quickGoalPanel").open = false;
+      quickGoalHintEl.textContent = "新的愿望已经放进对应货架了。";
     });
+
+    homeShelfBoardEl.addEventListener("change", (event) => {
+      const input = event.target.closest("[data-shelf-config]");
+      if (!input) {
+        return;
+      }
+      const shelfId = input.dataset.shelfId;
+      const configKey = input.dataset.shelfConfig;
+      if (!shelfId || !configKey) {
+        return;
+      }
+      BudgetCore.updateWishShelf(state, shelfId, { [configKey]: input.value });
+      state = BudgetCore.loadState();
+      renderShelfSelectOptions(quickGoalShelfSelectEl, quickGoalFormEl.elements.shelfId.value || getWishShelves()[0]?.id || "");
+      renderHome();
+    });
+
+    homeShelfBoardEl.addEventListener("click", (event) => {
+      const detailButton = event.target.closest("[data-goal-open]");
+      if (detailButton) {
+        window.location.href = `goal-detail.html?id=${encodeURIComponent(detailButton.dataset.goalOpen)}`;
+        return;
+      }
+
+      const card = event.target.closest(".home-goal-card");
+      if (!card) {
+        return;
+      }
+      if (event.target.closest("button, a, input, select, textarea, label")) {
+        return;
+      }
+      window.location.href = `goal-detail.html?id=${encodeURIComponent(card.dataset.goalId)}`;
+    });
+
+    mainGoalsGridEl.addEventListener("click", (event) => {
+      const button = event.target.closest("[data-main-action]");
+      if (!button) {
+        const card = event.target.closest(".main-target-tile[data-goal-id]");
+        if (card && !event.target.closest("button, a")) {
+          window.location.href = `goal-detail.html?id=${encodeURIComponent(card.dataset.goalId)}`;
+        }
+        return;
+      }
+
+      const goalId = button.dataset.goalId;
+      const action = button.dataset.mainAction;
+      if (!goalId || !action) {
+        return;
+      }
+      if (action === "open") {
+        window.location.href = `goal-detail.html?id=${encodeURIComponent(goalId)}`;
+      }
+    });
+
+    function getWishShelves() {
+      return BudgetCore.getWishShelves(state);
+    }
+
+    function syncShelfRows() {
+      BudgetCore.updateWishShelfRows(state, Number(homeShelfRowsInputEl.value || 2));
+      state = BudgetCore.loadState();
+      renderHome();
+    }
+
+    function renderShelfSelectOptions(selectEl, selectedShelfId = "") {
+      const shelves = getWishShelves();
+      selectEl.innerHTML = shelves.map((shelf) => `
+        <option value="${shelf.id}" ${selectedShelfId === shelf.id ? "selected" : ""}>${BudgetCore.escapeHtml(shelf.name)}</option>
+      `).join("");
+    }
+
+    function readQuickGoalDraft() {
+      return {
+        name: String(quickGoalFormEl.elements.name.value || "").trim(),
+        target: Number(quickGoalFormEl.elements.target.value || 0),
+        baseSaved: Number(quickGoalFormEl.elements.baseSaved.value || 0),
+        shelfId: String(quickGoalFormEl.elements.shelfId.value || "").trim(),
+        icon: String(quickGoalFormEl.elements.icon.value || "").trim(),
+        image: String(quickGoalFormEl.elements.image.value || "").trim(),
+        hasDeadline: quickGoalFormEl.elements.hasDeadline.checked,
+        deadline: String(quickGoalFormEl.elements.deadline.value || ""),
+        note: String(quickGoalFormEl.elements.note.value || "").trim(),
+        color: String(quickGoalFormEl.elements.color.value || BudgetCore.palette[0])
+      };
+    }
+
+    function resetQuickGoalForm() {
+      quickGoalFormEl.reset();
+      quickGoalFormEl.elements.color.value = "#d08e73";
+      quickGoalFormEl.elements.hasDeadline.checked = true;
+      quickGoalImageFileEl.value = "";
+      renderShelfSelectOptions(quickGoalShelfSelectEl, getWishShelves()[0]?.id || "");
+      renderQuickGoalIconPicker();
+    }
 
     function readFileAsDataUrl(file) {
       return new Promise((resolve, reject) => {
@@ -580,60 +440,238 @@
       });
     }
 
-    function buildQuoteDeck(previousQuoteText = "") {
-      const quotes = BudgetCore.getMotivationalQuotes();
-      const shuffled = [...quotes];
-      for (let index = shuffled.length - 1; index > 0; index -= 1) {
-        const randomIndex = Math.floor(Math.random() * (index + 1));
-        [shuffled[index], shuffled[randomIndex]] = [shuffled[randomIndex], shuffled[index]];
-      }
-
-      if (shuffled.length > 1 && previousQuoteText && shuffled[0]?.text === previousQuoteText) {
-        const swapIndex = shuffled.findIndex((item) => item.text !== previousQuoteText);
-        if (swapIndex > 0) {
-          [shuffled[0], shuffled[swapIndex]] = [shuffled[swapIndex], shuffled[0]];
-        }
-      }
-
-      return shuffled;
+    function renderQuickGoalIconPicker() {
+      const currentValue = String(quickGoalFormEl.elements.icon.value || "").trim();
+      quickGoalIconPickerEl.innerHTML = BudgetCore.getGoalIconLibrary().map((item) => `
+        <button class="icon-picker-chip ${currentValue === item.value ? "is-active" : ""}" type="button" data-icon-value="${BudgetCore.escapeHtml(item.value)}" title="${BudgetCore.escapeHtml(item.label)}" aria-label="选择${BudgetCore.escapeHtml(item.label)}图标">
+          <span class="icon-picker-chip-icon">${BudgetCore.escapeHtml(item.value)}</span>
+          <span class="icon-picker-chip-label">${BudgetCore.escapeHtml(item.label)}</span>
+        </button>
+      `).join("");
     }
 
-    function renderQuote(forceDifferent = false) {
-      const history = JSON.parse(sessionStorage.getItem("wish-grocery-quote-history") || "[]");
-
-      if (!quoteDeck.length || forceDifferent) {
-        quoteDeck = buildQuoteDeck(lastRenderedQuoteText || history[history.length - 1] || "");
-      }
-
-      let quote = quoteDeck.shift();
-      if (!quote) {
-        quoteDeck = buildQuoteDeck(lastRenderedQuoteText || history[history.length - 1] || "");
-        quote = quoteDeck.shift();
-      }
-
-      if (!quote) {
-        return;
-      }
-
-      if (quote.text === lastRenderedQuoteText && quoteDeck.length) {
-        quote = quoteDeck.shift() || quote;
-      }
-
-      lastRenderedQuoteText = quote.text;
+    function renderQuote(forceNew = false) {
+      const quote = BudgetCore.getRandomQuote(forceNew && currentQuoteText ? [currentQuoteText] : []);
+      currentQuoteText = quote.text;
       quoteTextEl.textContent = quote.text;
       quoteAuthorEl.textContent = quote.author;
-      sessionStorage.setItem("wish-grocery-last-quote", quote.text);
-      sessionStorage.setItem("wish-grocery-quote-history", JSON.stringify([...history, quote.text].slice(-96)));
     }
 
-    async function syncAdminEntry() {
-      try {
-        const response = await fetch("/api/session");
-        const result = await response.json();
-        adminEntryButtonEl.hidden = !(result?.authenticated && result?.user?.role === "admin");
-      } catch {
-        adminEntryButtonEl.hidden = true;
+    function renderHeroMetrics() {
+      const activeGoals = BudgetCore.getActiveGoals(state);
+      const totalSaved = activeGoals.reduce((sum, goal) => sum + goal.saved, 0);
+      const pinnedCount = activeGoals.filter((goal) => goal.isPinned).length;
+      const todayText = new Intl.DateTimeFormat("zh-CN", {
+        month: "numeric",
+        day: "numeric"
+      }).format(new Date());
+
+      heroMiniMetricsEl.innerHTML = [
+        { label: "今日", value: todayText },
+        { label: "主要目标", value: `${pinnedCount}/3` },
+        { label: "活跃愿望", value: `${activeGoals.length} 个` },
+        { label: "已攒总额", value: BudgetCore.formatCurrency(totalSaved) }
+      ].map((item) => `
+        <div>
+          <span>${BudgetCore.escapeHtml(item.label)}</span>
+          <strong>${BudgetCore.escapeHtml(item.value)}</strong>
+        </div>
+      `).join("");
+    }
+
+    function renderMainGoals() {
+      const pinnedGoals = BudgetCore.getActiveGoals(state).filter((goal) => goal.isPinned).slice(0, 3);
+      const cards = pinnedGoals.map((goal) => {
+        const percent = Math.round(goal.progress * 100);
+        const deadlineText = goal.hasDeadline && goal.deadline ? BudgetCore.formatDate(goal.deadline) : "不设时间";
+        const backgroundStyle = goal.image ? `--card-image:url('${BudgetCore.escapeHtml(goal.image)}');` : "";
+
+        return `
+          <article class="main-target-tile ${goal.image ? "has-photo" : ""}" draggable="true" data-goal-id="${goal.id}" style="--goal-color:${goal.color};${backgroundStyle}">
+            <div class="main-target-topline">
+              <span class="goal-state-pill">主要目标</span>
+              <button class="goal-action-button detail-inline-button" data-main-action="open" data-goal-id="${goal.id}" type="button">详情</button>
+            </div>
+            <div class="main-target-body">
+              <div class="main-target-visual">
+                ${goal.image ? `<img alt="${BudgetCore.escapeHtml(goal.name)}" src="${BudgetCore.escapeHtml(goal.image)}">` : BudgetCore.escapeHtml(goal.icon || "愿")}
+              </div>
+              <div class="main-target-copy">
+                <h3>${BudgetCore.escapeHtml(goal.name)}</h3>
+                <small>${deadlineText}</small>
+              </div>
+            </div>
+            <div class="main-target-progress">
+              <span>${BudgetCore.formatCurrency(goal.saved)}</span>
+              <span>${percent}%</span>
+            </div>
+            <div class="priority-progress">
+              <div style="width:${percent}%; background:${goal.color};"></div>
+            </div>
+          </article>
+        `;
+      });
+
+      while (cards.length < 3) {
+        cards.push(`
+          <article class="main-target-tile empty">
+            <div class="main-target-body">
+              <div class="main-target-visual">+</div>
+              <div class="main-target-copy">
+                <h3>预留一个主要目标</h3>
+                <small>去愿望管理里置顶，或直接新增愿望</small>
+              </div>
+            </div>
+            <div class="priority-progress">
+              <div style="width:0%;"></div>
+            </div>
+          </article>
+        `);
       }
+
+      mainGoalsGridEl.innerHTML = cards.join("");
+    }
+
+    function renderOverviewMetrics() {
+      const metrics = BudgetCore.buildMetrics(state, BudgetCore.getGoalViews(state, { includeCompleted: true }));
+      metricsGridEl.innerHTML = metrics.map((item) => `
+        <article class="metric-card compact-panel">
+          <span class="section-kicker">${BudgetCore.escapeHtml(item.label)}</span>
+          <strong>${BudgetCore.escapeHtml(item.value)}</strong>
+          <p>${BudgetCore.escapeHtml(item.detail)}</p>
+        </article>
+      `).join("");
+    }
+
+    function renderHomeShelfCard(goal) {
+      const percent = Math.round(goal.progress * 100);
+      const deadlineText = goal.hasDeadline && goal.deadline ? BudgetCore.formatDate(goal.deadline) : "不设时间";
+      const backgroundStyle = goal.image ? `--card-image:url('${BudgetCore.escapeHtml(goal.image)}');` : "";
+
+      return `
+        <article class="goal-card home-goal-card ${goal.image ? "has-photo" : ""}" draggable="true" data-goal-id="${goal.id}" data-shelf-id="${goal.shelfId}" style="--goal-color:${goal.color};${backgroundStyle}">
+          <div class="home-goal-topline">
+            <span class="slider-sort-chip">${BudgetCore.escapeHtml(goal.shelf?.name || "愿望货架")}</span>
+          </div>
+          <div class="home-goal-card-main">
+            <div class="home-goal-icon-chip">
+              ${goal.image ? `<img alt="${BudgetCore.escapeHtml(goal.name)}" src="${BudgetCore.escapeHtml(goal.image)}">` : BudgetCore.escapeHtml(goal.icon || "愿")}
+            </div>
+            <div class="home-goal-core">
+              <h3>${BudgetCore.escapeHtml(goal.name)}</h3>
+              <small>${deadlineText}</small>
+            </div>
+            <div class="progress-ring home-progress-ring" style="--progress:${percent * 3.6}deg;">${percent}%</div>
+          </div>
+          <div class="home-goal-moneyline">
+            <strong>${BudgetCore.formatCurrency(goal.saved)}</strong>
+            <span>/ ${BudgetCore.formatCurrency(goal.target)}</span>
+            <button class="goal-action-button detail-inline-button" data-goal-open="${goal.id}" type="button">详情</button>
+          </div>
+        </article>
+      `;
+    }
+
+    function renderShelves() {
+      const shelves = BudgetCore.getGoalsByShelf(state);
+      homeShelfRowsInputEl.value = String(shelves.length);
+      homeShelfBoardEl.innerHTML = shelves.map((shelf) => `
+        <section class="wish-shelf-row" style="--shelf-color:${shelf.color};">
+          <div class="wish-shelf-head wish-shelf-head-editor wish-shelf-head-home">
+            <div class="wish-shelf-config-grid">
+              <label class="wish-shelf-config-field">
+                <span>货架名称</span>
+                <input data-shelf-id="${shelf.id}" data-shelf-config="name" type="text" value="${BudgetCore.escapeHtml(shelf.name)}">
+              </label>
+              <label class="wish-shelf-config-field wish-shelf-color-field">
+                <span>货架颜色</span>
+                <input data-shelf-id="${shelf.id}" data-shelf-config="color" type="color" value="${shelf.color}">
+              </label>
+            </div>
+            <span class="muted">这一层现在有 ${shelf.goals.length} 个愿望，可以左右拖动换位置，也可以拖去别的货架。</span>
+          </div>
+          <div class="wish-shelf-track" data-shelf-id="${shelf.id}">
+            ${shelf.goals.length ? shelf.goals.map((goal) => renderHomeShelfCard(goal)).join("") : `<div class="empty-shelf-slot" data-shelf-id="${shelf.id}">这一层暂时还是空的，你可以新增愿望到这里，或把别的愿望拖过来。</div>`}
+          </div>
+        </section>
+      `).join("");
+    }
+
+    function bindDragAndDrop() {
+      const cards = document.querySelectorAll(".home-goal-card, .main-target-tile[data-goal-id]");
+      cards.forEach((card) => {
+        card.addEventListener("dragstart", () => {
+          draggedGoalId = card.dataset.goalId;
+          card.classList.add("dragging");
+        });
+
+        card.addEventListener("dragend", () => {
+          draggedGoalId = null;
+          card.classList.remove("dragging");
+          document.querySelectorAll(".drop-target").forEach((item) => item.classList.remove("drop-target"));
+        });
+
+        card.addEventListener("dragover", (event) => {
+          event.preventDefault();
+          card.classList.add("drop-target");
+        });
+
+        card.addEventListener("dragleave", () => {
+          card.classList.remove("drop-target");
+        });
+
+        card.addEventListener("drop", (event) => {
+          event.preventDefault();
+          card.classList.remove("drop-target");
+          const targetGoalId = card.dataset.goalId;
+          if (!draggedGoalId || !targetGoalId || draggedGoalId === targetGoalId) {
+            return;
+          }
+
+          const targetGoal = BudgetCore.getGoalById(state, targetGoalId);
+          const draggedGoal = BudgetCore.getGoalById(state, draggedGoalId);
+          if (!targetGoal || !draggedGoal) {
+            return;
+          }
+
+          if (draggedGoal.shelfId !== targetGoal.shelfId) {
+            BudgetCore.assignGoalToShelf(state, draggedGoalId, targetGoal.shelfId);
+            state = BudgetCore.loadState();
+          }
+
+          const activeGoals = BudgetCore.getActiveGoals(state);
+          const targetIndex = activeGoals.findIndex((item) => item.id === targetGoalId);
+          if (targetIndex < 0) {
+            return;
+          }
+          BudgetCore.moveGoalToIndex(state, draggedGoalId, targetIndex);
+          state = BudgetCore.loadState();
+          renderHome();
+        });
+      });
+
+      homeShelfBoardEl.querySelectorAll(".empty-shelf-slot").forEach((slot) => {
+        slot.addEventListener("dragover", (event) => {
+          event.preventDefault();
+          slot.classList.add("drop-target");
+        });
+
+        slot.addEventListener("dragleave", () => {
+          slot.classList.remove("drop-target");
+        });
+
+        slot.addEventListener("drop", (event) => {
+          event.preventDefault();
+          slot.classList.remove("drop-target");
+          const shelfId = slot.dataset.shelfId;
+          if (!draggedGoalId || !shelfId) {
+            return;
+          }
+          BudgetCore.assignGoalToShelf(state, draggedGoalId, shelfId);
+          state = BudgetCore.loadState();
+          renderHome();
+        });
+      });
     }
 
     function syncThemeInputs() {
@@ -641,201 +679,26 @@
         input.value = state.ui.theme[key];
         themePreviewDots[key].style.setProperty("--swatch-color", input.value);
       });
+      BudgetCore.applyTheme(state.ui.theme);
     }
 
-    function renderIconPicker(container, input) {
-      const currentValue = String(input.value || "").trim();
-      const chips = BudgetCore.getGoalIconLibrary().map((item) => `
-        <button class="icon-picker-chip ${currentValue === item.value ? "is-active" : ""}" type="button" data-icon-value="${BudgetCore.escapeHtml(item.value)}" title="${BudgetCore.escapeHtml(item.label)}" aria-label="选择${BudgetCore.escapeHtml(item.label)}图标">
-          <span class="icon-picker-chip-icon">${BudgetCore.escapeHtml(item.value)}</span>
-          <span class="icon-picker-chip-label">${BudgetCore.escapeHtml(item.label)}</span>
-        </button>
-      `).join("");
-      container.innerHTML = chips;
-    }
-
-    function syncQuickGoalIconPicker() {
-      renderIconPicker(quickGoalIconPickerEl, quickGoalFormEl.elements.icon);
-    }
-
-    function syncQuickGoalDeadlineState() {
-      quickGoalFormEl.elements.deadline.disabled = !quickGoalFormEl.elements.hasDeadline.checked;
-      if (!quickGoalFormEl.elements.hasDeadline.checked) {
-        quickGoalFormEl.elements.deadline.value = "";
-      }
-    }
-
-    function resetQuickGoalForm() {
-      quickGoalFormEl.reset();
-      quickGoalFormEl.elements.color.value = state.ui.theme?.accent || "#d08e73";
-      quickGoalFormEl.elements.hasDeadline.checked = false;
-      quickGoalFormHintEl.textContent = "新建后会马上同步到主页愿望进度板。";
-      syncQuickGoalDeadlineState();
-      syncQuickGoalIconPicker();
-    }
-
-    function getActiveGoalViews() {
-      return BudgetCore.getGoalViews(state, { includeCompleted: false }).filter((goal) => goal.status === "active");
-    }
-
-    function buildGoalShelfRows(goalViews, rows) {
-      const rowCount = Math.max(1, Math.min(Number(rows || 2), 999));
-      const shelves = Array.from({ length: rowCount }, () => []);
-      goalViews.forEach((goal, index) => {
-        shelves[index % rowCount].push(goal);
-      });
-      return shelves;
-    }
-
-    function renderMainGoals(goalViews) {
-      const pinnedGoals = goalViews.filter((goal) => goal.isPinned).slice(0, BudgetCore.MAX_PINNED_GOALS);
-      heroGoalCountLabelEl.textContent = `${pinnedGoals.length} / ${BudgetCore.MAX_PINNED_GOALS} 已置顶`;
-
-      const cards = pinnedGoals.map((goal, index) => {
-        const percent = Math.round(goal.progress * 100);
-        const deadlineText = goal.hasDeadline && goal.deadline ? BudgetCore.formatDate(goal.deadline) : "自由推进";
-        const imageMarkup = goal.image ? `<img class="priority-card-backdrop" alt="" src="${BudgetCore.escapeHtml(goal.image)}">` : "";
-
-        return `
-          <article class="priority-card priority-card-compact ${goal.image ? "has-image" : ""}" data-goal-id="${goal.id}" style="border-color:${goal.color}55;">
-            ${imageMarkup}
-            <div class="priority-topline">
-              <span class="priority-rank">TOP ${index + 1}</span>
-              <div class="priority-quick-actions">
-                <button class="priority-drag-handle" type="button" draggable="true" data-drag-handle="true" aria-label="拖动调整顺序" title="拖动调整顺序">移</button>
-                <button class="ghost-button small priority-mini-button" type="button" data-home-action="move-left" data-goal-id="${goal.id}">左</button>
-                <button class="ghost-button small priority-mini-button" type="button" data-home-action="move-right" data-goal-id="${goal.id}">右</button>
-                <a class="ghost-button small priority-card-link priority-mini-link text-link" href="goal-detail.html?id=${encodeURIComponent(goal.id)}">详情</a>
-              </div>
-            </div>
-            <div class="priority-core">
-              <div class="goal-visual priority-goal-visual" style="border-color:${goal.color}55;">
-                ${goal.image ? `<img alt="${BudgetCore.escapeHtml(goal.name)}" src="${BudgetCore.escapeHtml(goal.image)}">` : BudgetCore.escapeHtml(goal.icon || "愿")}
-              </div>
-              <div class="priority-summary-block">
-                <strong>${BudgetCore.escapeHtml(goal.name)}</strong>
-                <p>已攒 ${BudgetCore.formatCurrency(goal.saved)} · 还差 ${BudgetCore.formatCurrency(goal.remaining)}</p>
-              </div>
-              <b class="priority-percent-badge">${percent}%</b>
-            </div>
-            <div class="priority-progress">
-              <div style="width:${percent}%;background:${goal.color};"></div>
-            </div>
-            <div class="priority-footer-line">
-              <span class="priority-target-chip">目标 ${BudgetCore.formatCurrency(goal.target)}</span>
-              <span class="priority-deadline-pill">${deadlineText}</span>
-            </div>
-          </article>
-        `;
-      });
-
-      while (cards.length < BudgetCore.MAX_PINNED_GOALS) {
-        cards.push(`
-          <article class="priority-card priority-card-compact empty">
-            <div class="priority-card-title priority-empty-copy">
-              <strong>留给下一个愿望</strong>
-              <p>去愿望管理页把它设成主要目标。</p>
-            </div>
-          </article>
-        `);
-      }
-
-      priorityGridEl.innerHTML = cards.join("");
-    }
-
-    function renderGoalSlider(goalViews) {
-      if (!goalViews.length) {
-        sliderTrackEl.innerHTML = `<div class="empty-state">还没有活跃愿望，去“愿望管理”添加一个吧。</div>`;
-        return;
-      }
-
-      const rows = state.ui?.wishShelfRows || 2;
-      homeWishShelfRowsSelectEl.value = String(rows);
-      const shelfRows = buildGoalShelfRows(goalViews, rows);
-
-      sliderTrackEl.innerHTML = shelfRows.map((rowGoals, rowIndex) => `
-        <section class="wish-shelf-row">
-          <div class="wish-shelf-head">
-            <strong>愿望货架 ${rowIndex + 1}</strong>
-            <span class="muted">每一行最多放 10 个愿望，默认先看到 5 个，左右滑动继续看。</span>
-          </div>
-          <div class="wish-shelf-track" data-row-index="${rowIndex}">
-            ${rowGoals.length ? rowGoals.map((goal, index) => {
-              const percent = Math.round(goal.progress * 100);
-              const deadlineText = goal.hasDeadline && goal.deadline
-                ? `计划时间：${BudgetCore.formatDate(goal.deadline)}`
-                : "不设计划时间";
-
-              return `
-                <article class="slider-card slider-card-draggable" style="--goal-color:${goal.color};" data-goal-id="${goal.id}" draggable="true" tabindex="0" aria-label="打开 ${BudgetCore.escapeHtml(goal.name)} 详情">
-                  <div class="slider-card-topline">
-                    <span class="goal-state-pill">${goal.isPinned ? "主要目标" : "普通愿望"}</span>
-                    <span class="slider-sort-chip">拖动排序 · ${index + 1}</span>
-                  </div>
-                  <div class="slider-card-media">
-                    <div class="goal-visual">
-                      ${goal.image ? `<img alt="${BudgetCore.escapeHtml(goal.name)}" src="${BudgetCore.escapeHtml(goal.image)}">` : BudgetCore.escapeHtml(goal.icon || "愿")}
-                    </div>
-                  </div>
-                  <div class="goal-card-head">
-                    <div>
-                      <h3>${BudgetCore.escapeHtml(goal.name)}</h3>
-                      <small>${deadlineText}</small>
-                    </div>
-                    <div class="progress-ring" style="--progress:${percent * 3.6}deg;">${percent}%</div>
-                  </div>
-                  <div class="goal-finance">
-                    <div class="goal-meta">
-                      <span>已攒</span>
-                      <strong>${BudgetCore.formatCurrency(goal.saved)}</strong>
-                    </div>
-                    <div class="goal-meta">
-                      <span>目标</span>
-                      <strong>${BudgetCore.formatCurrency(goal.target)}</strong>
-                    </div>
-                    <div class="goal-meta">
-                      <span>还差</span>
-                      <strong>${BudgetCore.formatCurrency(goal.remaining)}</strong>
-                    </div>
-                  </div>
-                  ${goal.note ? `<p class="muted">${BudgetCore.escapeHtml(goal.note)}</p>` : ""}
-                  <p class="goal-tip">${goal.tip}</p>
-                </article>
-              `;
-            }).join("") : `<div class="empty-shelf-slot">这一层货架暂时还是空的，可以继续新增愿望放进来。</div>`}
-          </div>
-        </section>
-      `).join("");
-    }
-
-    function renderMetrics(goalViews) {
-      const metrics = BudgetCore.buildMetrics(state, goalViews);
-      document.getElementById("heroGoalCount").textContent = String(goalViews.length);
-      document.getElementById("heroIncomeCount").textContent = String(state.incomes.length);
-      document.getElementById("compactTotalIncome").textContent = metrics[0]?.value || "0 元";
-      document.getElementById("compactGoalMoney").textContent = metrics[1]?.value || "0 元";
-    }
-
-    function renderHomePage() {
+    function renderHome() {
       state = BudgetCore.loadState();
-      const goalViews = getActiveGoalViews();
-      syncThemeInputs();
-      if (!quickGoalFormEl.elements.name.value && !quickGoalPanelEl.open) {
-        quickGoalFormEl.elements.color.value = state.ui.theme?.accent || "#d08e73";
-      }
-      syncQuickGoalDeadlineState();
-      syncQuickGoalIconPicker();
-      renderMainGoals(goalViews);
-      renderGoalSlider(goalViews);
-      renderMetrics(goalViews);
+      renderShelfSelectOptions(quickGoalShelfSelectEl, quickGoalFormEl.elements.shelfId.value || getWishShelves()[0]?.id || "");
+      renderHeroMetrics();
+      renderMainGoals();
+      renderShelves();
+      renderOverviewMetrics();
+      bindDragAndDrop();
       BudgetCore.applyTheme(state.ui.theme);
     }
 
     async function initHomePage() {
       state = await BudgetCore.bootstrapState();
+      syncThemeInputs();
+      resetQuickGoalForm();
       renderQuote(true);
-      renderHomePage();
-      syncAdminEntry();
+      renderHome();
     }
 
     initHomePage();

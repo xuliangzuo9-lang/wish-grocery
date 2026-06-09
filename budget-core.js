@@ -64,6 +64,14 @@ const motivationalQuotes = [
 ];
 
 const palette = ["#d9754f", "#487a72", "#d5a95a", "#7f6af2", "#b55d88", "#5a7ecb"];
+const defaultWishShelfNames = [
+  "心动专区",
+  "旅行角",
+  "成长架",
+  "生活柜",
+  "奖励盒",
+  "灵感铺"
+];
 const goalIconLibrary = [
   { value: "✈", label: "旅行" },
   { value: "🎒", label: "出发" },
@@ -95,6 +103,14 @@ const categoryColors = {
 const archivedGoalColor = "#9a8e85";
 const completedGoalColor = "#5d8b61";
 
+function createDefaultWishShelf(index, color = palette[index % palette.length]) {
+  return {
+    id: `shelf-${index + 1}`,
+    name: defaultWishShelfNames[index] || `愿望货架 ${index + 1}`,
+    color
+  };
+}
+
 const seedState = {
   goals: [
     {
@@ -108,6 +124,7 @@ const seedState = {
       hasDeadline: true,
       deadline: "2026-08-18",
       color: "#d9754f",
+      shelfId: "shelf-1",
       isPinned: true,
       status: "active",
       sortOrder: 0,
@@ -124,6 +141,7 @@ const seedState = {
       hasDeadline: true,
       deadline: "2026-07-30",
       color: "#487a72",
+      shelfId: "shelf-2",
       isPinned: true,
       status: "active",
       sortOrder: 1,
@@ -161,6 +179,10 @@ const seedState = {
   ui: {
     showArchivedAllocations: true,
     wishShelfRows: 2,
+    wishShelves: [
+      createDefaultWishShelf(0, "#d9754f"),
+      createDefaultWishShelf(1, "#487a72")
+    ],
     theme: {
       accent: "#d9754f",
       accentDeep: "#8f4d34",
@@ -176,6 +198,37 @@ function cloneSeed() {
   return structuredClone(seedState);
 }
 
+function normalizeWishShelves(rawShelves, rows) {
+  const rowCount = clampWishShelfRows(rows);
+  const shelves = Array.isArray(rawShelves)
+    ? rawShelves.slice(0, rowCount).map((shelf, index) => ({
+        id: shelf?.id || `shelf-${index + 1}`,
+        name: String(shelf?.name || "").trim() || defaultWishShelfNames[index] || `愿望货架 ${index + 1}`,
+        color: shelf?.color || palette[index % palette.length]
+      }))
+    : [];
+
+  while (shelves.length < rowCount) {
+    shelves.push(createDefaultWishShelf(shelves.length));
+  }
+
+  return shelves;
+}
+
+function getWishShelves(state) {
+  const shelves = normalizeWishShelves(state.ui?.wishShelves, state.ui?.wishShelfRows || 2);
+  if (!state.ui) {
+    state.ui = {};
+  }
+  state.ui.wishShelves = shelves;
+  state.ui.wishShelfRows = shelves.length;
+  return shelves.map((shelf) => ({ ...shelf }));
+}
+
+function getWishShelfById(state, shelfId) {
+  return getWishShelves(state).find((shelf) => shelf.id === shelfId) || null;
+}
+
 function loadState() {
   const keys = [getScopedStorageKey(), ...getScopedLegacyKeys()];
   for (const key of keys) {
@@ -185,7 +238,7 @@ function loadState() {
     }
     try {
       const parsed = JSON.parse(raw);
-      return normalizeState(parsed);
+      return normalizeStateV2(parsed);
     } catch {
       return cloneSeed();
     }
@@ -241,6 +294,25 @@ function normalizeState(raw) {
       allocationItemVisibility: raw.ui?.allocationItemVisibility ?? {}
     }
   };
+}
+
+function normalizeStateV2(raw) {
+  const state = normalizeState(raw);
+  const rows = clampWishShelfRows(state.ui?.wishShelfRows ?? raw?.ui?.wishShelves?.length ?? 2);
+  const shelves = normalizeWishShelves(raw?.ui?.wishShelves || state.ui?.wishShelves, rows);
+  state.ui.wishShelves = shelves;
+  state.ui.wishShelfRows = shelves.length;
+
+  state.goals = state.goals.map((goal, index) => {
+    const fallbackShelfId = shelves[index % shelves.length]?.id || "shelf-1";
+    const hasValidShelf = shelves.some((shelf) => shelf.id === goal.shelfId);
+    return {
+      ...goal,
+      shelfId: hasValidShelf ? goal.shelfId : fallbackShelfId
+    };
+  });
+
+  return state;
 }
 
 function clampWishShelfRows(value) {
@@ -355,13 +427,13 @@ async function hydrateRemoteState() {
 
       const payload = await response.json();
       if (payload?.state) {
-        const normalized = normalizeState(payload.state);
+        const normalized = normalizeStateV2(payload.state);
         localStorage.setItem(getScopedStorageKey(), JSON.stringify(normalized));
         return normalized;
       }
 
       const localState = loadRawState();
-      const normalizedLocal = normalizeState(localState);
+      const normalizedLocal = normalizeStateV2(localState);
       await syncRemoteStateNow(normalizedLocal);
       return normalizedLocal;
     } catch {
@@ -374,7 +446,7 @@ async function hydrateRemoteState() {
 
 async function bootstrapState() {
   const hydrated = await hydrateRemoteState();
-  return normalizeState(hydrated);
+  return normalizeStateV2(hydrated);
 }
 
 function getToday() {
@@ -510,6 +582,7 @@ function buildGoalView(state, goal) {
   const progress = Math.min(saved / safeTarget, 1);
   const remaining = Math.max(goal.target - saved, 0);
   const daysLeft = goal.deadline ? daysBetween(getToday(), goal.deadline) : null;
+  const shelf = getWishShelfById(state, goal.shelfId);
 
   let tip = remaining === 0
     ? "已经攒够啦，可以开始计划出发或购买了。"
@@ -521,6 +594,8 @@ function buildGoalView(state, goal) {
 
   return {
     ...goal,
+    shelfId: goal.shelfId || shelf?.id || null,
+    shelf,
     saved,
     progress,
     remaining,
@@ -590,6 +665,10 @@ function getGoalById(state, goalId) {
 }
 
 function addGoal(state, draft) {
+  const shelves = getWishShelves(state);
+  const shelfId = shelves.some((shelf) => shelf.id === draft.shelfId)
+    ? draft.shelfId
+    : (shelves[0]?.id || "shelf-1");
   state.goals.unshift({
     id: `goal-${Date.now()}`,
     name: draft.name,
@@ -601,6 +680,7 @@ function addGoal(state, draft) {
     hasDeadline: draft.hasDeadline,
     deadline: draft.hasDeadline ? draft.deadline : "",
     color: draft.color,
+    shelfId,
     isPinned: getPinnedGoalCount(state) < MAX_PINNED_GOALS,
     status: "active",
     sortOrder: -1,
@@ -624,6 +704,9 @@ function updateGoal(state, goalId, draft) {
   goal.hasDeadline = draft.hasDeadline;
   goal.deadline = draft.hasDeadline ? draft.deadline : "";
   goal.color = draft.color;
+  if (draft.shelfId && getWishShelves(state).some((shelf) => shelf.id === draft.shelfId)) {
+    goal.shelfId = draft.shelfId;
+  }
   syncGoalNameAcrossAllocations(state, goal.id, goal.name);
   saveState(state);
   return true;
@@ -871,8 +954,54 @@ function updateTheme(state, theme) {
 }
 
 function updateWishShelfRows(state, rows) {
-  state.ui.wishShelfRows = clampWishShelfRows(rows);
+  const nextRows = clampWishShelfRows(rows);
+  const nextShelves = normalizeWishShelves(state.ui?.wishShelves, nextRows);
+  state.ui.wishShelves = nextShelves;
+  state.ui.wishShelfRows = nextShelves.length;
+  state.goals.forEach((goal, index) => {
+    if (!nextShelves.some((shelf) => shelf.id === goal.shelfId)) {
+      goal.shelfId = nextShelves[index % nextShelves.length]?.id || nextShelves[0]?.id || "shelf-1";
+    }
+  });
   saveState(state);
+}
+
+function updateWishShelf(state, shelfId, updates = {}) {
+  const shelves = normalizeWishShelves(state.ui?.wishShelves, state.ui?.wishShelfRows || 2);
+  const shelf = shelves.find((item) => item.id === shelfId);
+  if (!shelf) {
+    return { ok: false };
+  }
+  shelf.name = String(updates.name ?? shelf.name).trim() || shelf.name;
+  shelf.color = updates.color || shelf.color;
+  state.ui.wishShelves = shelves;
+  state.ui.wishShelfRows = shelves.length;
+  saveState(state);
+  return { ok: true, shelf: { ...shelf } };
+}
+
+function getGoalsByShelf(state, options = {}) {
+  const { includeCompleted = false } = options;
+  const shelves = getWishShelves(state);
+  const goals = getGoalViews(state, { includeCompleted });
+  return shelves.map((shelf) => ({
+    ...shelf,
+    goals: goals.filter((goal) => goal.shelfId === shelf.id && (includeCompleted || goal.status === "active"))
+  }));
+}
+
+function assignGoalToShelf(state, goalId, shelfId) {
+  const goal = state.goals.find((item) => item.id === goalId);
+  if (!goal) {
+    return { ok: false };
+  }
+  const shelf = getWishShelves(state).find((item) => item.id === shelfId);
+  if (!shelf) {
+    return { ok: false };
+  }
+  goal.shelfId = shelf.id;
+  saveState(state);
+  return { ok: true };
 }
 
 function deleteArchivedAllocationEntry(state, itemId) {
@@ -955,6 +1084,10 @@ window.BudgetCore = {
   getActiveGoals,
   getCompletedGoals,
   getGoalById,
+  getWishShelves,
+  getWishShelfById,
+  getGoalsByShelf,
+  assignGoalToShelf,
   buildMetrics,
   addGoal,
   updateGoal,
@@ -972,6 +1105,7 @@ window.BudgetCore = {
   ,
   updateTheme,
   updateWishShelfRows,
+  updateWishShelf,
   setAllocationVisibility,
   setAllocationVisibilityByKey,
   getAllocationVisibilityKey,
