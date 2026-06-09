@@ -1436,6 +1436,73 @@ label span {
   font-size: 0.88rem;
 }
 
+.quick-goal-panel {
+  margin: 4px 0 14px;
+  border-radius: 20px;
+  background: rgba(255, 252, 248, 0.7);
+  border: 1px solid var(--panel-border);
+  overflow: hidden;
+}
+
+.mobile-quick-goal-action {
+  margin: 0 0 10px;
+}
+
+.mobile-quick-goal-action .solid-button {
+  min-width: 128px;
+}
+
+.quick-goal-summary {
+  list-style: none;
+  cursor: pointer;
+  padding: 12px 16px;
+  font-weight: 700;
+  color: var(--accent-deep);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.quick-goal-summary::-webkit-details-marker {
+  display: none;
+}
+
+.quick-goal-summary::after {
+  content: "+";
+  width: 28px;
+  height: 28px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  background: var(--button-soft);
+  color: var(--accent-deep);
+  font-size: 1rem;
+}
+
+.quick-goal-panel[open] .quick-goal-summary::after {
+  content: "-";
+}
+
+.quick-goal-form {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px 14px;
+  padding: 0 16px 16px;
+}
+
+.quick-goal-form-full {
+  grid-column: 1 / -1;
+}
+
+.quick-goal-form-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: center;
+}
+
 .reveal {
   opacity: 0;
   transform: translateY(20px);
@@ -1517,6 +1584,19 @@ label span {
   .allocation-row,
   .record-top {
     grid-template-columns: 1fr;
+  }
+
+  .quick-goal-form {
+    grid-template-columns: 1fr;
+  }
+
+  .mobile-quick-goal-action {
+    width: 100%;
+  }
+
+  .mobile-quick-goal-action .solid-button {
+    width: 100%;
+    justify-content: center;
   }
 
   .slider-track {

@@ -114,6 +114,55 @@
             <a class="ghost-button small" href="records.html">查看收入记录</a>
           </div>
         </div>
+        <div class="section-actions mobile-quick-goal-action">
+          <button class="solid-button small" id="openQuickGoalFormButton" type="button">新增愿望</button>
+        </div>
+        <details class="quick-goal-panel" id="quickGoalPanel">
+          <summary class="quick-goal-summary">新增愿望</summary>
+          <form class="quick-goal-form" id="quickGoalForm">
+            <label>
+              <span>愿望名称</span>
+              <input name="name" type="text" placeholder="例如：去旅游" required>
+            </label>
+            <label>
+              <span>目标金额</span>
+              <input name="target" type="number" min="1" step="1" placeholder="2000" required>
+            </label>
+            <label>
+              <span>已存金额</span>
+              <input name="baseSaved" type="number" min="0" step="1" placeholder="0">
+            </label>
+            <label>
+              <span>图标</span>
+              <input name="icon" type="text" maxlength="4" placeholder="旅 / 书 / 家">
+            </label>
+            <label class="quick-goal-form-full">
+              <span>图片 URL</span>
+              <input name="image" type="url" placeholder="可选：给愿望加一张图片">
+            </label>
+            <label class="toggle-chip">
+              <input name="hasDeadline" type="checkbox">
+              <span>设置计划时间</span>
+            </label>
+            <label>
+              <span>计划日期</span>
+              <input name="deadline" type="date">
+            </label>
+            <label class="quick-goal-form-full">
+              <span>备注</span>
+              <textarea name="note" rows="2" placeholder="简单写一下这个愿望为什么重要"></textarea>
+            </label>
+            <label>
+              <span>颜色</span>
+              <input name="color" type="color" value="#d08e73">
+            </label>
+            <div class="quick-goal-form-actions quick-goal-form-full">
+              <button class="solid-button" type="submit">保存愿望</button>
+              <a class="ghost-button" href="goals.html#goalEditor">去愿望管理页完整编辑</a>
+            </div>
+            <p class="form-hint quick-goal-form-full" id="quickGoalFormHint">新建后会马上同步到主页愿望进度板。</p>
+          </form>
+        </details>
         <div class="slider-shell">
           <div class="slider-toolbar">
             <p class="muted">点击卡片直接进入详情页继续修改。</p>
@@ -166,6 +215,10 @@
     const heroGoalCountLabelEl = document.getElementById("heroGoalCountLabel");
     const themePopoverEl = document.getElementById("themePopover");
     const adminEntryButtonEl = document.getElementById("adminEntryButton");
+    const quickGoalPanelEl = document.getElementById("quickGoalPanel");
+    const quickGoalFormEl = document.getElementById("quickGoalForm");
+    const quickGoalFormHintEl = document.getElementById("quickGoalFormHint");
+    const openQuickGoalFormButtonEl = document.getElementById("openQuickGoalFormButton");
     const quoteTextEl = document.getElementById("heroQuoteText");
     const quoteAuthorEl = document.getElementById("heroQuoteAuthor");
     const themeInputs = {
@@ -210,6 +263,14 @@
       renderQuote(true);
     });
 
+    openQuickGoalFormButtonEl.addEventListener("click", () => {
+      quickGoalPanelEl.open = true;
+      quickGoalFormEl.elements.name.focus();
+      quickGoalPanelEl.scrollIntoView({ behavior: "smooth", block: "start" });
+    });
+
+    quickGoalFormEl.elements.hasDeadline.addEventListener("change", syncQuickGoalDeadlineState);
+
     document.addEventListener("click", (event) => {
       const withinThemePanel = event.target.closest(".nav-utilities");
       if (!withinThemePanel) {
@@ -240,6 +301,40 @@
         state = BudgetCore.loadState();
         BudgetCore.applyTheme(state.ui.theme);
       });
+    });
+
+    quickGoalFormEl.addEventListener("submit", async (event) => {
+      event.preventDefault();
+
+      const draft = {
+        name: String(quickGoalFormEl.elements.name.value || "").trim(),
+        target: Number(quickGoalFormEl.elements.target.value || 0),
+        baseSaved: Number(quickGoalFormEl.elements.baseSaved.value || 0),
+        icon: String(quickGoalFormEl.elements.icon.value || "").trim(),
+        image: String(quickGoalFormEl.elements.image.value || "").trim(),
+        hasDeadline: quickGoalFormEl.elements.hasDeadline.checked,
+        deadline: String(quickGoalFormEl.elements.deadline.value || ""),
+        note: String(quickGoalFormEl.elements.note.value || "").trim(),
+        color: String(quickGoalFormEl.elements.color.value || state.ui.theme.accent || BudgetCore.palette[0])
+      };
+
+      if (!draft.name || draft.target <= 0) {
+        quickGoalFormHintEl.textContent = "请先填写愿望名称和目标金额。";
+        return;
+      }
+
+      if (draft.hasDeadline && !draft.deadline) {
+        quickGoalFormHintEl.textContent = "你开启了计划时间，请再选择一个日期。";
+        return;
+      }
+
+      BudgetCore.addGoal(state, draft);
+      state = BudgetCore.loadState();
+      renderHomePage();
+      await BudgetCore.syncRemoteStateNow(state);
+      quickGoalFormHintEl.textContent = "已保存，这个愿望现在已经出现在主页愿望进度板里了。";
+      quickGoalPanelEl.open = false;
+      resetQuickGoalForm();
     });
 
     priorityGridEl.addEventListener("click", (event) => {
@@ -432,6 +527,21 @@
       });
     }
 
+    function syncQuickGoalDeadlineState() {
+      quickGoalFormEl.elements.deadline.disabled = !quickGoalFormEl.elements.hasDeadline.checked;
+      if (!quickGoalFormEl.elements.hasDeadline.checked) {
+        quickGoalFormEl.elements.deadline.value = "";
+      }
+    }
+
+    function resetQuickGoalForm() {
+      quickGoalFormEl.reset();
+      quickGoalFormEl.elements.color.value = state.ui.theme?.accent || "#d08e73";
+      quickGoalFormEl.elements.hasDeadline.checked = false;
+      quickGoalFormHintEl.textContent = "新建后会马上同步到主页愿望进度板。";
+      syncQuickGoalDeadlineState();
+    }
+
     function getActiveGoalViews() {
       return BudgetCore.getGoalViews(state, { includeCompleted: false }).filter((goal) => goal.status === "active");
     }
@@ -557,6 +667,10 @@
       state = BudgetCore.loadState();
       const goalViews = getActiveGoalViews();
       syncThemeInputs();
+      if (!quickGoalFormEl.elements.name.value && !quickGoalPanelEl.open) {
+        quickGoalFormEl.elements.color.value = state.ui.theme?.accent || "#d08e73";
+      }
+      syncQuickGoalDeadlineState();
       renderMainGoals(goalViews);
       renderGoalSlider(goalViews);
       renderMetrics(goalViews);

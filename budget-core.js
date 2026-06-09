@@ -400,13 +400,12 @@ function getRandomQuote(excludeText = "") {
     return motivationalQuotes[0];
   }
 
-  let quote = motivationalQuotes[Math.floor(Math.random() * motivationalQuotes.length)];
-  let guard = 0;
-  while (excludeText && quote.text === excludeText && guard < 12) {
-    quote = motivationalQuotes[Math.floor(Math.random() * motivationalQuotes.length)];
-    guard += 1;
-  }
-  return quote;
+  const pool = excludeText
+    ? motivationalQuotes.filter((item) => item.text !== excludeText)
+    : motivationalQuotes;
+
+  const safePool = pool.length ? pool : motivationalQuotes;
+  return safePool[Math.floor(Math.random() * safePool.length)];
 }
 
 function getPinnedGoalCount(state) {
