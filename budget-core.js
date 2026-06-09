@@ -64,6 +64,28 @@ const motivationalQuotes = [
 ];
 
 const palette = ["#d9754f", "#487a72", "#d5a95a", "#7f6af2", "#b55d88", "#5a7ecb"];
+const goalIconLibrary = [
+  { value: "✈", label: "旅行" },
+  { value: "🎒", label: "出发" },
+  { value: "🏡", label: "生活" },
+  { value: "📚", label: "学习" },
+  { value: "💻", label: "数码" },
+  { value: "🎓", label: "成长" },
+  { value: "💪", label: "健康" },
+  { value: "🎨", label: "兴趣" },
+  { value: "📷", label: "记录" },
+  { value: "🎁", label: "奖励" },
+  { value: "💍", label: "纪念" },
+  { value: "🚗", label: "出行" },
+  { value: "🏠", label: "家庭" },
+  { value: "🛋", label: "家居" },
+  { value: "🐈", label: "宠物" },
+  { value: "🌿", label: "放松" },
+  { value: "🍰", label: "美食" },
+  { value: "☕", label: "日常" },
+  { value: "📱", label: "手机" },
+  { value: "🎯", label: "目标" }
+];
 const categoryColors = {
   "生活费": "#487a72",
   "备用金": "#d5a95a",
@@ -447,6 +469,10 @@ function getRandomQuote(exclusions = []) {
 
 function getMotivationalQuotes() {
   return motivationalQuotes.map((quote) => ({ ...quote }));
+}
+
+function getGoalIconLibrary() {
+  return goalIconLibrary.map((icon) => ({ ...icon }));
 }
 
 function getPinnedGoalCount(state) {
@@ -922,6 +948,7 @@ window.BudgetCore = {
   escapeHtml,
   getRandomQuote,
   getMotivationalQuotes,
+  getGoalIconLibrary,
   getPinnedGoalCount,
   togglePinnedGoal,
   getGoalViews,

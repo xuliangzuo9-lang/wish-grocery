@@ -647,7 +647,8 @@
       const currentValue = String(input.value || "").trim();
       const chips = BudgetCore.getGoalIconLibrary().map((item) => `
         <button class="icon-picker-chip ${currentValue === item.value ? "is-active" : ""}" type="button" data-icon-value="${BudgetCore.escapeHtml(item.value)}" title="${BudgetCore.escapeHtml(item.label)}" aria-label="选择${BudgetCore.escapeHtml(item.label)}图标">
-          ${BudgetCore.escapeHtml(item.value)}
+          <span class="icon-picker-chip-icon">${BudgetCore.escapeHtml(item.value)}</span>
+          <span class="icon-picker-chip-label">${BudgetCore.escapeHtml(item.label)}</span>
         </button>
       `).join("");
       container.innerHTML = chips;
