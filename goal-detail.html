@@ -43,6 +43,14 @@
                   <small class="detail-hero-deadline" id="detailCardDeadline">不设计划时间</small>
                 </div>
               </div>
+              <div class="detail-intro-card" id="detailIntroCard">
+                <div class="detail-intro-backdrop" id="detailIntroBackdrop"></div>
+                <div class="detail-intro-overlay"></div>
+                <div class="detail-intro-content">
+                  <h3>愿望介绍</h3>
+                  <p id="detailIntroText">这里会展示这个愿望的备注、用途和你给自己的提醒。</p>
+                </div>
+              </div>
               <div class="detail-gear-showcase">
                 <div class="progress-ring detail-progress-ring detail-gear-ring" id="detailProgressRing">
                   <div class="detail-gear-percent" id="detailProgressPercent">0%</div>
@@ -107,10 +115,13 @@
                 <input name="hasDeadline" type="checkbox" checked>
                 <span>设置计划时间</span>
               </label>
-              <label>
-                <span>计划日期</span>
-                <input name="deadline" type="date">
-              </label>
+              <div class="deadline-fieldset" id="detailDeadlineBlock">
+                <label>
+                  <span>计划日期</span>
+                  <input name="deadline" type="date">
+                </label>
+                <p class="form-hint">如果这个愿望不需要计划时间，可以不勾选，对应日期会自动收起。</p>
+              </div>
               <label>
                 <span>目标备注</span>
                 <textarea name="note" rows="3" placeholder="写一点这个目标的用途、理由或提醒"></textarea>
@@ -177,6 +188,10 @@
     const detailGoalImageFileEl = document.getElementById("detailGoalImageFile");
     const detailGoalIconPickerEl = document.getElementById("detailGoalIconPicker");
     const detailGoalShelfSelectEl = document.getElementById("detailGoalShelfSelect");
+    const detailIntroCardEl = document.getElementById("detailIntroCard");
+    const detailIntroBackdropEl = document.getElementById("detailIntroBackdrop");
+    const detailIntroTextEl = document.getElementById("detailIntroText");
+    const detailDeadlineBlockEl = document.getElementById("detailDeadlineBlock");
 
     function getGoalView() {
       return BudgetCore.getGoalById(state, goalId);
@@ -266,6 +281,7 @@
       formEl.elements.deadline.value = goal.deadline || "";
       formEl.elements.note.value = goal.note || "";
       formEl.elements.color.value = goal.color;
+      syncDetailDeadlineVisibility();
       renderIconPicker();
     }
 
@@ -304,12 +320,17 @@
       if (renderGoal.image) {
         detailHeroCardEl.classList.add("has-photo");
         detailHeroBackdropEl.style.backgroundImage = `url("${BudgetCore.escapeHtml(renderGoal.image)}")`;
+        detailIntroCardEl.classList.add("has-photo");
+        detailIntroBackdropEl.style.backgroundImage = `url("${BudgetCore.escapeHtml(renderGoal.image)}")`;
       } else {
         detailHeroCardEl.classList.remove("has-photo");
         detailHeroBackdropEl.style.backgroundImage = "none";
+        detailIntroCardEl.classList.remove("has-photo");
+        detailIntroBackdropEl.style.backgroundImage = "none";
       }
 
       detailHeroVisualEl.innerHTML = BudgetCore.escapeHtml(renderGoal.icon || "愿");
+      detailIntroTextEl.textContent = renderGoal.note || "这个愿望暂时还没有备注介绍，你可以在下方补充它的意义、用途或给自己的提醒。";
       detailMetaTipEl.textContent = renderGoal.note ? `${renderGoal.note} · ${renderGoal.tip}` : renderGoal.tip;
 
       detailTogglePinEl.textContent = renderGoal.isPinned ? "取消主要目标" : "设为主要目标";
@@ -320,12 +341,14 @@
 
     formEl.addEventListener("input", () => {
       syncDraftFromForm();
+      syncDetailDeadlineVisibility();
       renderIconPicker();
       renderDetail();
     });
 
     formEl.addEventListener("change", () => {
       syncDraftFromForm();
+      syncDetailDeadlineVisibility();
       renderIconPicker();
       renderDetail();
     });
@@ -351,6 +374,15 @@
       syncDraftFromForm();
       renderDetail();
     });
+
+    function syncDetailDeadlineVisibility() {
+      const enabled = formEl.elements.hasDeadline.checked;
+      detailDeadlineBlockEl.hidden = !enabled;
+      formEl.elements.deadline.disabled = !enabled;
+      if (!enabled) {
+        formEl.elements.deadline.value = "";
+      }
+    }
 
     formEl.addEventListener("submit", (event) => {
       event.preventDefault();
@@ -398,6 +430,7 @@
 
     async function initDetailPage() {
       state = await BudgetCore.bootstrapState();
+      syncDetailDeadlineVisibility();
       renderIconPicker();
       renderDetail();
       BudgetCore.applyTheme(state.ui.theme);

@@ -1278,6 +1278,37 @@ label span {
   color: var(--ink-soft);
 }
 
+.main-target-progress-rich {
+  flex-wrap: wrap;
+  justify-content: flex-start;
+  gap: 6px 12px;
+  font-size: 0.78rem;
+}
+
+.deadline-fieldset[hidden] {
+  display: none !important;
+}
+
+.goal-progress-bar-box {
+  min-width: 116px;
+  display: grid;
+  gap: 8px;
+  justify-items: end;
+}
+
+.goal-progress-bar-track {
+  width: 100%;
+  height: 10px;
+  border-radius: 999px;
+  background: rgba(255, 252, 248, 0.22);
+  overflow: hidden;
+}
+
+.goal-progress-bar-fill {
+  height: 100%;
+  border-radius: inherit;
+}
+
 .wish-shelf-head-home {
   align-items: end;
 }
@@ -1482,6 +1513,57 @@ label span {
   display: grid;
   place-items: center;
   width: 100%;
+}
+
+.detail-intro-card {
+  position: relative;
+  min-height: 180px;
+  border-radius: 28px;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  background: rgba(255, 252, 248, 0.1);
+}
+
+.detail-intro-backdrop,
+.detail-intro-overlay {
+  position: absolute;
+  inset: 0;
+}
+
+.detail-intro-backdrop {
+  background:
+    linear-gradient(135deg, rgba(var(--accent-rgb), 0.22), rgba(var(--gold-rgb), 0.12));
+  background-size: cover;
+  background-position: center;
+  transform: scale(1.08);
+  filter: blur(0);
+}
+
+.detail-intro-card.has-photo .detail-intro-backdrop {
+  filter: blur(10px) saturate(0.95);
+}
+
+.detail-intro-overlay {
+  background: linear-gradient(180deg, rgba(20, 14, 10, 0.18), rgba(20, 14, 10, 0.68));
+}
+
+.detail-intro-content {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  gap: 10px;
+  padding: 18px;
+  color: #fff8f3;
+}
+
+.detail-intro-content h3,
+.detail-intro-content p {
+  margin: 0;
+}
+
+.detail-intro-content p {
+  line-height: 1.8;
+  color: rgba(255, 248, 243, 0.92);
 }
 
 .detail-progress-ring {
@@ -2340,6 +2422,11 @@ label span {
 
   .main-target-body {
     align-items: flex-start;
+  }
+
+  .goal-progress-bar-box {
+    min-width: 100%;
+    justify-items: stretch;
   }
 
   .detail-hero-single {

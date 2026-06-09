@@ -92,7 +92,7 @@
             <div>
               <p class="section-kicker">Active goals</p>
               <h2>活跃愿望</h2>
-              <p class="muted compact-note-inline">每一层货架都可以单独命名、单独设置主题色。卡片顺序和主页同步，拖动即可跨位置调整。</p>
+              <p class="muted compact-note-inline">每一层货架都可以单独命名。卡片顺序和主页同步，拖动即可跨位置调整。</p>
             </div>
             <div class="section-actions">
               <label>
@@ -150,10 +150,13 @@
               <input name="hasDeadline" type="checkbox" checked>
               <span>设置计划时间</span>
             </label>
-            <label>
-              <span>计划日期</span>
-              <input name="deadline" type="date">
-            </label>
+            <div class="deadline-fieldset" id="goalDeadlineBlock">
+              <label>
+                <span>计划日期</span>
+                <input name="deadline" type="date">
+              </label>
+              <p class="form-hint">如果这个愿望不需要计划时间，可以不勾选，对应日期会自动收起。</p>
+            </div>
             <label>
               <span>愿望备注</span>
               <textarea name="note" rows="3" placeholder="简单写一下这个愿望的意义、用途或提醒自己为什么想完成它"></textarea>
@@ -211,6 +214,7 @@
     const goalShelfSelectEl = document.getElementById("goalShelfSelect");
     const goalIconPickerEl = document.getElementById("goalIconPicker");
     const themePopoverEl = document.getElementById("themePopover");
+    const goalDeadlineBlockEl = document.getElementById("goalDeadlineBlock");
 
     const themeInputs = {
       accent: document.getElementById("themeAccent"),
@@ -307,6 +311,7 @@
     });
 
     goalFormEl.elements.icon.addEventListener("input", syncGoalIconPicker);
+    goalFormEl.elements.hasDeadline.addEventListener("change", syncGoalDeadlineVisibility);
 
     cancelGoalEditButtonEl.addEventListener("click", () => {
       resetGoalForm();
@@ -572,7 +577,12 @@
                   <small>${deadlineText}</small>
                   <span class="goal-state-pill">${mode === "completed" ? "已完成愿望" : (goal.isPinned ? "主页主要目标" : "普通愿望")}</span>
                 </div>
-                <div class="progress-ring" style="--progress:${percent * 3.6}deg;">${percent}%</div>
+                <div class="goal-progress-bar-box">
+                  <div class="goal-progress-bar-track">
+                    <div class="goal-progress-bar-fill" style="width:${percent}%; background:${goal.color};"></div>
+                  </div>
+                  <strong>${percent}%</strong>
+                </div>
               </div>
               <div class="goal-finance">
                 <div class="goal-meta">
@@ -632,10 +642,6 @@
                 <span>货架名称</span>
                 <input data-shelf-id="${shelf.id}" data-shelf-config="name" type="text" value="${BudgetCore.escapeHtml(shelf.name)}">
               </label>
-              <label class="wish-shelf-config-field wish-shelf-color-field">
-                <span>货架主题色</span>
-                <input data-shelf-id="${shelf.id}" data-shelf-config="color" type="color" value="${shelf.color}">
-              </label>
             </div>
             <span class="muted">这一层展示 ${shelf.goals.length} 个愿望，拖动卡片即可调整整体顺序。</span>
           </div>
@@ -674,6 +680,7 @@
       goalFormEl.elements.deadline.value = editingGoalDraft.deadline;
       goalFormEl.elements.note.value = editingGoalDraft.note;
       goalFormEl.elements.color.value = editingGoalDraft.color;
+      syncGoalDeadlineVisibility();
       goalFormTitleEl.textContent = "编辑愿望";
       goalFormKickerEl.textContent = "Edit target";
       goalFormHintEl.textContent = "左侧卡片会实时预览你的修改，确认后再保存。";
@@ -692,6 +699,7 @@
       goalFormEl.elements.image.value = "";
       goalImageFileEl.value = "";
       goalFormEl.elements.hasDeadline.checked = true;
+      syncGoalDeadlineVisibility();
       renderShelfSelectOptions(goalShelfSelectEl, getWishShelves()[0]?.id || "");
       goalFormTitleEl.textContent = "添加愿望";
       goalFormKickerEl.textContent = "Create target";
@@ -701,6 +709,15 @@
       syncGoalIconPicker();
       if (shouldRender) {
         renderGoalsPage();
+      }
+    }
+
+    function syncGoalDeadlineVisibility() {
+      const enabled = goalFormEl.elements.hasDeadline.checked;
+      goalDeadlineBlockEl.hidden = !enabled;
+      goalFormEl.elements.deadline.disabled = !enabled;
+      if (!enabled) {
+        goalFormEl.elements.deadline.value = "";
       }
     }
 
@@ -764,6 +781,7 @@
       syncThemeInputs();
       syncGoalIconPicker();
       resetGoalForm(false);
+      syncGoalDeadlineVisibility();
       renderGoalsPage();
     }
 
