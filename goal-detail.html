@@ -88,6 +88,10 @@
                 <span>目标图标</span>
                 <input name="icon" type="text" maxlength="4" placeholder="例如：旅 / 学 / 家 / 书">
               </label>
+              <div class="icon-picker-field">
+                <span>图标库</span>
+                <div class="icon-picker-grid" id="detailGoalIconPicker"></div>
+              </div>
               <label>
                 <span>目标图片 URL</span>
                 <input name="image" type="text" placeholder="可选：放一张代表这个愿望的图片链接">
@@ -166,6 +170,7 @@
     const detailReopenGoalEl = document.getElementById("detailReopenGoal");
     const detailDeleteGoalEl = document.getElementById("detailDeleteGoal");
     const detailGoalImageFileEl = document.getElementById("detailGoalImageFile");
+    const detailGoalIconPickerEl = document.getElementById("detailGoalIconPicker");
 
     function getGoalView() {
       return BudgetCore.getGoalById(state, goalId);
@@ -225,6 +230,15 @@
       });
     }
 
+    function renderIconPicker() {
+      const currentValue = String(formEl.elements.icon.value || "").trim();
+      detailGoalIconPickerEl.innerHTML = BudgetCore.getGoalIconLibrary().map((item) => `
+        <button class="icon-picker-chip ${currentValue === item.value ? "is-active" : ""}" type="button" data-icon-value="${BudgetCore.escapeHtml(item.value)}" title="${BudgetCore.escapeHtml(item.label)}" aria-label="选择${BudgetCore.escapeHtml(item.label)}图标">
+          ${BudgetCore.escapeHtml(item.value)}
+        </button>
+      `).join("");
+    }
+
     function fillForm(goal) {
       formEl.elements.name.value = goal.name;
       formEl.elements.target.value = String(goal.target);
@@ -235,6 +249,7 @@
       formEl.elements.deadline.value = goal.deadline || "";
       formEl.elements.note.value = goal.note || "";
       formEl.elements.color.value = goal.color;
+      renderIconPicker();
     }
 
     function renderDetail() {
@@ -278,11 +293,24 @@
 
     formEl.addEventListener("input", () => {
       syncDraftFromForm();
+      renderIconPicker();
       renderDetail();
     });
 
     formEl.addEventListener("change", () => {
       syncDraftFromForm();
+      renderIconPicker();
+      renderDetail();
+    });
+
+    detailGoalIconPickerEl.addEventListener("click", (event) => {
+      const button = event.target.closest("[data-icon-value]");
+      if (!button) {
+        return;
+      }
+      formEl.elements.icon.value = button.dataset.iconValue || "";
+      syncDraftFromForm();
+      renderIconPicker();
       renderDetail();
     });
 
@@ -343,6 +371,7 @@
 
     async function initDetailPage() {
       state = await BudgetCore.bootstrapState();
+      renderIconPicker();
       renderDetail();
       BudgetCore.applyTheme(state.ui.theme);
     }

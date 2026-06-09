@@ -220,6 +220,33 @@ body::before {
   padding: 12px 14px;
 }
 
+.hero-fusion-panel {
+  overflow: hidden;
+}
+
+.hero-fusion-layout {
+  display: grid;
+  grid-template-columns: minmax(280px, 0.92fr) minmax(0, 1.38fr);
+  gap: 16px;
+  align-items: stretch;
+}
+
+.hero-focus-block {
+  display: grid;
+  gap: 12px;
+  align-content: start;
+  padding: 4px 2px;
+}
+
+.hero-fusion-main {
+  display: grid;
+  gap: 8px;
+}
+
+.hero-fusion-main-head {
+  margin-bottom: 4px;
+}
+
 .quote-card-head {
   display: flex;
   align-items: center;
@@ -318,6 +345,11 @@ body::before {
   z-index: 2;
 }
 
+.hero-focus-block .quote-card {
+  margin-top: 8px;
+  padding: 12px 14px;
+}
+
 .quote-card p {
   margin: 0;
   line-height: 1.8;
@@ -343,8 +375,8 @@ body::before {
 .hero-priority-grid {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 12px;
-  margin-top: 14px;
+  gap: 10px;
+  margin-top: 10px;
 }
 
 .compact-grid {
@@ -361,8 +393,8 @@ body::before {
 }
 
 .priority-card.priority-card-compact {
-  padding: 12px;
-  min-height: 132px;
+  padding: 10px;
+  min-height: 116px;
 }
 
 .priority-card strong,
@@ -412,6 +444,14 @@ body::before {
 }
 
 .hero-mini-metrics.hero-mini-metrics-compact {
+  gap: 10px;
+}
+
+.metrics-panel .section-head {
+  margin-bottom: 14px;
+}
+
+.metrics-grid {
   gap: 10px;
 }
 
@@ -999,7 +1039,7 @@ label span {
 
 .detail-stats {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: 1fr;
   gap: 12px;
 }
 
@@ -1064,6 +1104,39 @@ label span {
   text-align: center;
   padding: 18px;
   line-height: 1.7;
+}
+
+.icon-picker-field {
+  display: grid;
+  gap: 10px;
+}
+
+.icon-picker-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(42px, 1fr));
+  gap: 8px;
+}
+
+.icon-picker-chip {
+  min-height: 42px;
+  border-radius: 14px;
+  border: 1px solid var(--panel-border);
+  background: rgba(255, 255, 255, 0.78);
+  color: var(--ink);
+  font: inherit;
+  font-size: 1.12rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: transform 180ms ease, border-color 180ms ease, background 180ms ease;
+}
+
+.icon-picker-chip:hover,
+.icon-picker-chip.is-active {
+  transform: translateY(-1px);
+  background: rgba(var(--accent-rgb), 0.12);
+  border-color: rgba(var(--accent-rgb), 0.32);
 }
 
 .goal-card-head {
@@ -1370,21 +1443,21 @@ label span {
 }
 
 .priority-card.priority-card-compact .priority-card-media {
-  margin-bottom: 34px;
+  margin-bottom: 26px;
 }
 
 .priority-topline {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 10px;
-  margin-bottom: 12px;
+  gap: 8px;
+  margin-bottom: 10px;
 }
 
 .priority-quick-actions {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 4px;
 }
 
 .priority-core {
@@ -1392,6 +1465,10 @@ label span {
   grid-template-columns: 44px 1fr auto;
   gap: 10px;
   align-items: center;
+}
+
+.priority-card.priority-card-compact .priority-core {
+  gap: 8px;
 }
 
 .priority-goal-visual {
@@ -1408,29 +1485,30 @@ label span {
 .priority-summary-block strong {
   display: block;
   margin: 0;
-  font-size: 0.96rem;
+  font-size: 0.92rem;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 
 .priority-summary-block p {
-  margin: 4px 0 0;
+  margin: 3px 0 0;
   color: rgba(255, 248, 243, 0.88);
-  font-size: 0.82rem;
+  font-size: 0.76rem;
+  line-height: 1.35;
 }
 
 .priority-percent-badge {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  min-width: 48px;
-  padding: 5px 8px;
+  min-width: 44px;
+  padding: 4px 7px;
   border-radius: 999px;
   background: rgba(255, 252, 248, 0.18);
   border: 1px solid rgba(255, 255, 255, 0.38);
   color: #fff8f3;
-  font-size: 0.84rem;
+  font-size: 0.78rem;
 }
 
 .priority-empty-copy {
@@ -1443,28 +1521,28 @@ label span {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  min-width: 48px;
-  padding: 6px 10px;
+  min-width: 42px;
+  padding: 5px 9px;
   border-radius: 999px;
   background: rgba(255, 252, 248, 0.78);
   border: 1px solid rgba(255, 255, 255, 0.54);
-  font-size: 0.85rem;
+  font-size: 0.78rem;
 }
 
 .priority-drag-handle {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  min-width: 46px;
-  height: 32px;
-  padding: 0 12px;
+  min-width: 30px;
+  height: 30px;
+  padding: 0 8px;
   border-radius: 999px;
   border: 1px dashed rgba(255, 255, 255, 0.72);
   background: rgba(255, 252, 248, 0.16);
   color: #fff8f3;
   cursor: grab;
   font: inherit;
-  font-size: 0.82rem;
+  font-size: 0.75rem;
   backdrop-filter: blur(8px);
 }
 
@@ -1497,20 +1575,29 @@ label span {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 10px;
-  margin-top: 10px;
+  gap: 8px;
+  margin-top: 8px;
   color: #fff8f3;
-  font-size: 0.83rem;
+  font-size: 0.76rem;
 }
 
 .priority-deadline-pill {
   display: inline-flex;
   align-items: center;
-  padding: 5px 10px;
+  padding: 4px 9px;
   border-radius: 999px;
   background: rgba(255, 252, 248, 0.14);
   border: 1px solid rgba(255, 255, 255, 0.18);
   white-space: nowrap;
+}
+
+.priority-target-chip {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 9px;
+  border-radius: 999px;
+  background: rgba(255, 252, 248, 0.18);
+  border: 1px solid rgba(255, 255, 255, 0.16);
 }
 
 .priority-card-actions {
@@ -1529,17 +1616,18 @@ label span {
 
 .priority-mini-button,
 .priority-mini-link {
-  min-width: 34px;
-  height: 34px;
-  padding: 0 10px;
+  min-width: 30px;
+  height: 30px;
+  padding: 0 8px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  font-size: 0.76rem;
 }
 
 .priority-mini-link.text-link {
   min-width: auto;
-  padding-inline: 12px;
+  padding-inline: 10px;
   white-space: nowrap;
 }
 
@@ -1638,6 +1726,7 @@ label span {
 
 @media (max-width: 1080px) {
   .hero,
+  .hero-fusion-layout,
   .auth-layout,
   .split-layout,
   .form-grid {
@@ -1687,6 +1776,14 @@ label span {
   .hero-priority-grid,
   .archive-manager-item {
     grid-template-columns: 1fr;
+  }
+
+  .hero-fusion-layout {
+    gap: 14px;
+  }
+
+  .hero-focus-block {
+    padding: 0;
   }
 
   .priority-mini-stats {

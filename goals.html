@@ -26,7 +26,7 @@
             <strong>整站配色</strong>
             <button class="ghost-button small" id="closeThemePanel" type="button">收起</button>
           </div>
-          <p class="muted theme-popover-copy">主题设置移到了右上角，小很多，也更适合随手调整。</p>
+          <p class="muted theme-popover-copy">这里改的是整站主题颜色，主页、愿望管理和收入记录会同步变化。</p>
           <div class="theme-swatch-grid">
             <div class="theme-swatch-field">
               <span>主色</span>
@@ -92,7 +92,7 @@
             <div>
               <p class="section-kicker">Active goals</p>
               <h2>活跃愿望</h2>
-              <p class="muted compact-note-inline">拖动卡片会同步影响主页愿望进度板顺序，置顶后也会同步到主页主要目标。每一行默认先展示 5 个愿望，左右滑动继续看。</p>
+              <p class="muted compact-note-inline">这里和主页愿望进度板保持同一顺序。你可以跨很多项拖动换位，也能增加任意行数来摆更多愿望。</p>
             </div>
             <div class="section-actions">
               <label>
@@ -122,13 +122,17 @@
               <input name="target" type="number" min="1" step="1" placeholder="2000" required>
             </label>
             <label>
-              <span>已存金额</span>
+              <span>已攒金额</span>
               <input name="baseSaved" type="number" min="0" step="1" placeholder="0">
             </label>
             <label>
               <span>愿望图标</span>
               <input name="icon" type="text" maxlength="4" placeholder="例如：旅、学、家、书">
             </label>
+            <div class="icon-picker-field">
+              <span>图标库</span>
+              <div class="icon-picker-grid" id="goalIconPicker"></div>
+            </div>
             <label>
               <span>愿望图片 URL</span>
               <input name="image" type="text" placeholder="可选：放一张代表这个愿望的图片链接">
@@ -136,7 +140,7 @@
             <label class="image-upload-stack">
               <span>本地上传图片</span>
               <input id="goalImageFile" type="file" accept="image/*">
-              <small class="form-hint">手机可直接从相册选图，电脑可从本地文件选图，选好后会自动填入上面的图片内容。</small>
+              <small class="form-hint">手机可直接从相册选图，电脑可从本地文件选图，选好后会自动填入上面的图片地址。</small>
             </label>
             <label class="toggle-chip">
               <input name="hasDeadline" type="checkbox" checked>
@@ -200,7 +204,9 @@
     const cancelGoalEditButtonEl = document.getElementById("cancelGoalEdit");
     const goalImageFileEl = document.getElementById("goalImageFile");
     const goalShelfRowsSelectEl = document.getElementById("goalShelfRowsSelect");
+    const goalIconPickerEl = document.getElementById("goalIconPicker");
     const themePopoverEl = document.getElementById("themePopover");
+
     const themeInputs = {
       accent: document.getElementById("themeAccent"),
       accentDeep: document.getElementById("themeAccentDeep"),
@@ -208,6 +214,7 @@
       bgStart: document.getElementById("themeBgStart"),
       bgEnd: document.getElementById("themeBgEnd")
     };
+
     const themePreviewDots = {
       accent: document.getElementById("previewThemeAccent"),
       accentDeep: document.getElementById("previewThemeAccentDeep"),
@@ -294,12 +301,15 @@
       }
     });
 
+    goalFormEl.elements.icon.addEventListener("input", syncGoalIconPicker);
+
     cancelGoalEditButtonEl.addEventListener("click", () => {
       resetGoalForm();
     });
 
     goalFormEl.addEventListener("input", () => {
       syncDraft();
+      syncGoalIconPicker();
       if (editingGoalId) {
         renderGoalsPage();
       }
@@ -307,6 +317,7 @@
 
     goalFormEl.addEventListener("change", () => {
       syncDraft();
+      syncGoalIconPicker();
       if (editingGoalId) {
         renderGoalsPage();
       }
@@ -316,6 +327,11 @@
       event.preventDefault();
       const draft = readDraft();
       if (!draft.name || draft.target <= 0) {
+        goalFormHintEl.textContent = "请先填写愿望名称和目标金额。";
+        return;
+      }
+      if (draft.hasDeadline && !draft.deadline) {
+        goalFormHintEl.textContent = "你开启了计划时间，请再选择一个日期。";
         return;
       }
       if (editingGoalId) {
@@ -401,6 +417,19 @@
       }
     });
 
+    goalIconPickerEl.addEventListener("click", (event) => {
+      const button = event.target.closest("[data-icon-value]");
+      if (!button) {
+        return;
+      }
+      goalFormEl.elements.icon.value = button.dataset.iconValue || "";
+      syncGoalIconPicker();
+      syncDraft();
+      if (editingGoalId) {
+        renderGoalsPage();
+      }
+    });
+
     function readDraft() {
       return {
         name: String(goalFormEl.elements.name.value || "").trim(),
@@ -430,6 +459,19 @@
         return;
       }
       editingGoalDraft = readDraft();
+    }
+
+    function renderIconPicker(container, input) {
+      const currentValue = String(input.value || "").trim();
+      container.innerHTML = BudgetCore.getGoalIconLibrary().map((item) => `
+        <button class="icon-picker-chip ${currentValue === item.value ? "is-active" : ""}" type="button" data-icon-value="${BudgetCore.escapeHtml(item.value)}" title="${BudgetCore.escapeHtml(item.label)}" aria-label="选择${BudgetCore.escapeHtml(item.label)}图标">
+          ${BudgetCore.escapeHtml(item.value)}
+        </button>
+      `).join("");
+    }
+
+    function syncGoalIconPicker() {
+      renderIconPicker(goalIconPickerEl, goalFormEl.elements.icon);
     }
 
     function getRenderableActiveGoals() {
@@ -464,7 +506,7 @@
     }
 
     function buildGoalShelfRows(goals, rows) {
-      const rowCount = Math.max(1, Math.min(Number(rows || 2), 99));
+      const rowCount = Math.max(1, Math.min(Number(rows || 2), 999));
       const shelves = Array.from({ length: rowCount }, () => []);
       goals.forEach((goal, index) => {
         shelves[index % rowCount].push(goal);
@@ -500,7 +542,7 @@
             </div>
             <div class="goal-finance">
               <div class="goal-meta">
-                <span>已存</span>
+                <span>已攒</span>
                 <strong>${BudgetCore.formatCurrency(goal.saved)}</strong>
               </div>
               <div class="goal-meta">
@@ -548,7 +590,7 @@
         <section class="wish-shelf-row">
           <div class="wish-shelf-head">
             <strong>愿望货架 ${rowIndex + 1}</strong>
-            <span class="muted">每行最多放 10 个愿望，默认先看到 5 个。</span>
+            <span class="muted">每一行最多放 10 个愿望，默认先看到 5 个，左右滑动继续看。</span>
           </div>
           <div class="wish-shelf-track" data-row-index="${rowIndex}">
             ${rowGoals.length ? renderGoalCards(rowGoals, "active") : `<div class="empty-shelf-slot">这一层货架暂时还是空的，可以继续新增愿望放进来。</div>`}
@@ -588,6 +630,7 @@
       goalFormHintEl.textContent = "左侧卡片会实时预览你的修改，确认后再保存。";
       goalSubmitButtonEl.textContent = "保存修改";
       cancelGoalEditButtonEl.hidden = false;
+      syncGoalIconPicker();
       renderGoalsPage();
     }
 
@@ -605,6 +648,7 @@
       goalFormHintEl.textContent = "编辑中的愿望会在左侧实时预览，确认后再保存就可以。";
       goalSubmitButtonEl.textContent = "保存愿望";
       cancelGoalEditButtonEl.hidden = true;
+      syncGoalIconPicker();
       if (shouldRender) {
         renderGoalsPage();
       }
@@ -643,8 +687,11 @@
           if (!draggedGoalId || draggedGoalId === card.dataset.goalId) {
             return;
           }
-          const cards = [...activeGoalsGridEl.querySelectorAll(".goal-card")];
-          const targetIndex = cards.findIndex((item) => item.dataset.goalId === card.dataset.goalId);
+          const activeGoals = getRenderableActiveGoals();
+          const targetIndex = activeGoals.findIndex((item) => item.id === card.dataset.goalId);
+          if (targetIndex < 0) {
+            return;
+          }
           BudgetCore.moveGoalToIndex(state, draggedGoalId, targetIndex);
           state = BudgetCore.loadState();
           renderGoalsPage();
@@ -663,6 +710,7 @@
     async function initGoalsPage() {
       state = await BudgetCore.bootstrapState();
       syncThemeInputs();
+      syncGoalIconPicker();
       renderGoalsPage();
     }
 

@@ -3,20 +3,70 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>愿望超市 | 收入记录</title>
+  <title>愿望杂货铺 | 收入记录</title>
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
   <div class="page-shell">
     <nav class="site-nav">
       <div class="brand-mark">
-        <strong>愿望超市</strong>
+        <strong>愿望杂货铺</strong>
         <span>管理收入流向，也管理每一笔愿望投入</span>
       </div>
       <div class="nav-links">
         <a class="nav-link" href="index.html">主页</a>
         <a class="nav-link" href="goals.html">愿望管理</a>
         <a class="nav-link active" href="records.html">收入记录</a>
+      </div>
+      <div class="nav-utilities">
+        <button class="ghost-button small" id="toggleRecordsThemePanel" type="button">主题颜色</button>
+        <section class="theme-popover theme-popover-compact" id="recordsThemePopover" hidden>
+          <div class="theme-popover-head">
+            <strong>整站配色</strong>
+            <button class="ghost-button small" id="closeRecordsThemePanel" type="button">收起</button>
+          </div>
+          <p class="muted theme-popover-copy">这里改的是整站主题颜色，主页、愿望管理和收入记录会同步变化。</p>
+          <div class="theme-swatch-grid">
+            <div class="theme-swatch-field">
+              <span>主色</span>
+              <button class="theme-swatch-button" type="button" data-record-theme-trigger="accent">
+                <span class="theme-swatch-dot" id="previewRecordsThemeAccent"></span>
+              </button>
+              <input id="recordsThemeAccent" class="theme-picker-input" type="color">
+            </div>
+            <div class="theme-swatch-field">
+              <span>深主色</span>
+              <button class="theme-swatch-button" type="button" data-record-theme-trigger="accentDeep">
+                <span class="theme-swatch-dot" id="previewRecordsThemeAccentDeep"></span>
+              </button>
+              <input id="recordsThemeAccentDeep" class="theme-picker-input" type="color">
+            </div>
+            <div class="theme-swatch-field">
+              <span>点缀色</span>
+              <button class="theme-swatch-button" type="button" data-record-theme-trigger="gold">
+                <span class="theme-swatch-dot" id="previewRecordsThemeGold"></span>
+              </button>
+              <input id="recordsThemeGold" class="theme-picker-input" type="color">
+            </div>
+            <div class="theme-swatch-field">
+              <span>背景起点</span>
+              <button class="theme-swatch-button" type="button" data-record-theme-trigger="bgStart">
+                <span class="theme-swatch-dot" id="previewRecordsThemeBgStart"></span>
+              </button>
+              <input id="recordsThemeBgStart" class="theme-picker-input" type="color">
+            </div>
+            <div class="theme-swatch-field">
+              <span>背景终点</span>
+              <button class="theme-swatch-button" type="button" data-record-theme-trigger="bgEnd">
+                <span class="theme-swatch-dot" id="previewRecordsThemeBgEnd"></span>
+              </button>
+              <input id="recordsThemeBgEnd" class="theme-picker-input" type="color">
+            </div>
+          </div>
+          <div class="theme-popover-actions">
+            <button class="ghost-button small" id="applyRecordsSoftTheme" type="button">恢复柔和默认</button>
+          </div>
+        </section>
       </div>
     </nav>
 
@@ -121,6 +171,13 @@
 
   <script src="budget-core.js"></script>
   <script>
+    const SOFT_THEME = {
+      accent: "#c68d74",
+      accentDeep: "#8f6658",
+      gold: "#c8a36a",
+      bgStart: "#f7f1ea",
+      bgEnd: "#ecdfd2"
+    };
     let state = BudgetCore.loadState();
 
     const allocationSummaryEl = document.getElementById("allocationSummary");
@@ -132,6 +189,69 @@
     const allocationRowsEl = document.getElementById("allocationRows");
     const allocationBalanceEl = document.getElementById("allocationBalance");
     const allocationRowTemplate = document.getElementById("allocationRowTemplate");
+    const recordsThemePopoverEl = document.getElementById("recordsThemePopover");
+    const recordsThemeInputs = {
+      accent: document.getElementById("recordsThemeAccent"),
+      accentDeep: document.getElementById("recordsThemeAccentDeep"),
+      gold: document.getElementById("recordsThemeGold"),
+      bgStart: document.getElementById("recordsThemeBgStart"),
+      bgEnd: document.getElementById("recordsThemeBgEnd")
+    };
+    const recordsThemePreviewDots = {
+      accent: document.getElementById("previewRecordsThemeAccent"),
+      accentDeep: document.getElementById("previewRecordsThemeAccentDeep"),
+      gold: document.getElementById("previewRecordsThemeGold"),
+      bgStart: document.getElementById("previewRecordsThemeBgStart"),
+      bgEnd: document.getElementById("previewRecordsThemeBgEnd")
+    };
+
+    document.getElementById("toggleRecordsThemePanel").addEventListener("click", () => {
+      recordsThemePopoverEl.hidden = !recordsThemePopoverEl.hidden;
+    });
+
+    document.getElementById("closeRecordsThemePanel").addEventListener("click", () => {
+      recordsThemePopoverEl.hidden = true;
+    });
+
+    document.getElementById("applyRecordsSoftTheme").addEventListener("click", () => {
+      BudgetCore.updateTheme(state, SOFT_THEME);
+      state = BudgetCore.loadState();
+      syncRecordsThemeInputs();
+      BudgetCore.applyTheme(state.ui.theme);
+    });
+
+    document.addEventListener("click", (event) => {
+      const withinThemePanel = event.target.closest(".nav-utilities");
+      if (!withinThemePanel) {
+        recordsThemePopoverEl.hidden = true;
+      }
+    });
+
+    document.querySelectorAll("[data-record-theme-trigger]").forEach((button) => {
+      button.addEventListener("click", () => {
+        const key = button.dataset.recordThemeTrigger;
+        const input = recordsThemeInputs[key];
+        if (input) {
+          input.showPicker?.();
+          input.click();
+        }
+      });
+    });
+
+    Object.entries(recordsThemeInputs).forEach(([key, input]) => {
+      input.addEventListener("input", () => {
+        recordsThemePreviewDots[key].style.setProperty("--swatch-color", input.value);
+        BudgetCore.updateTheme(state, {
+          accent: recordsThemeInputs.accent.value,
+          accentDeep: recordsThemeInputs.accentDeep.value,
+          gold: recordsThemeInputs.gold.value,
+          bgStart: recordsThemeInputs.bgStart.value,
+          bgEnd: recordsThemeInputs.bgEnd.value
+        });
+        state = BudgetCore.loadState();
+        BudgetCore.applyTheme(state.ui.theme);
+      });
+    });
 
     document.getElementById("resetRecordData").addEventListener("click", () => {
       state = BudgetCore.resetState();
@@ -498,6 +618,14 @@
       }).join("");
     }
 
+    function syncRecordsThemeInputs() {
+      Object.entries(recordsThemeInputs).forEach(([key, input]) => {
+        input.value = state.ui.theme[key];
+        recordsThemePreviewDots[key].style.setProperty("--swatch-color", input.value);
+      });
+      BudgetCore.applyTheme(state.ui.theme);
+    }
+
     function renderRecordsPage() {
       showArchivedAllocationsEl.checked = state.ui.showArchivedAllocations;
       const archivedCount = BudgetCore.countArchivedAllocations(state);
@@ -517,7 +645,7 @@
       state = await BudgetCore.bootstrapState();
       incomeFormEl.elements.date.value = BudgetCore.getToday();
       resetAllocationRows();
-      BudgetCore.applyTheme(state.ui.theme);
+      syncRecordsThemeInputs();
       renderRecordsPage();
     }
 

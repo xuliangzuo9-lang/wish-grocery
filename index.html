@@ -26,7 +26,7 @@
             <strong>主页配色</strong>
             <button class="ghost-button small" id="closeThemePanel" type="button">收起</button>
           </div>
-          <p class="muted theme-popover-copy">颜色选择器缩小了，整体也会自动走更柔和的表现，不会只剩按钮在变色。</p>
+          <p class="muted theme-popover-copy">这里改的是整站主题颜色，主页、愿望管理和收入记录会同步变化。</p>
           <div class="theme-swatch-grid">
             <div class="theme-swatch-field">
               <span>主色</span>
@@ -71,35 +71,37 @@
       </div>
     </nav>
 
-    <header class="hero hero-compact hero-super-compact reveal">
-      <div class="hero-copy">
-        <p class="eyebrow">Home focus</p>
-        <h1>先看最想实现的三个愿望</h1>
-        <p class="hero-text hero-text-compact">主页只保留最重要的内容，打开就能看到进度、差额和下一步。</p>
-      </div>
-      <div class="quote-card quote-inline quote-inline-compact">
-        <div class="quote-card-head">
-          <strong>今日激励</strong>
-          <button class="ghost-button small" id="refreshQuoteButton" type="button">换一句</button>
-        </div>
-        <p id="heroQuoteText">今天的每一笔克制，都会把你再送近一点。</p>
-        <footer id="heroQuoteAuthor">愿望杂货铺</footer>
-      </div>
-    </header>
-
     <main class="dashboard dashboard-tight">
-      <section class="panel reveal panel-tight">
-        <div class="section-head compact">
-          <div>
-            <p class="section-kicker">Main goals</p>
-            <h2>主要目标</h2>
-            <p class="muted compact-note-inline" id="heroGoalCountLabel">0 / 3 已置顶</p>
+      <section class="panel reveal panel-tight hero-fusion-panel">
+        <div class="hero-fusion-layout">
+          <div class="hero-focus-block">
+            <p class="section-kicker">Today focus</p>
+            <h1>先看最想实现的三个愿望</h1>
+            <p class="hero-text hero-text-compact">主页第一眼就先看到今日激励和三个主要目标，保持简洁，也更像一个真正的愿望仪表盘。</p>
+            <div class="quote-card quote-inline quote-inline-compact">
+              <div class="quote-card-head">
+                <strong>今日激励</strong>
+                <button class="ghost-button small" id="refreshQuoteButton" type="button">换一句</button>
+              </div>
+              <p id="heroQuoteText">今天的每一笔克制，都会把你再送近一点。</p>
+              <footer id="heroQuoteAuthor">愿望杂货铺</footer>
+            </div>
           </div>
-          <div class="section-actions">
-            <a class="ghost-button small" href="goals.html">去管理主要目标</a>
+
+          <div class="hero-fusion-main">
+            <div class="section-head compact hero-fusion-main-head">
+              <div>
+                <p class="section-kicker">Main goals</p>
+                <h2>主要目标</h2>
+                <p class="muted compact-note-inline" id="heroGoalCountLabel">0 / 3 已置顶</p>
+              </div>
+              <div class="section-actions">
+                <a class="ghost-button small" href="goals.html">去管理主要目标</a>
+              </div>
+            </div>
+            <div class="hero-priority-grid compact-grid" id="heroPriorityGrid"></div>
           </div>
         </div>
-        <div class="hero-priority-grid compact-grid" id="heroPriorityGrid"></div>
       </section>
 
       <section class="panel reveal panel-tight">
@@ -107,16 +109,18 @@
           <div>
             <p class="section-kicker">Wish board</p>
             <h2>愿望进度板</h2>
-            <p class="muted compact-note-inline">左右滑动看全部愿望，也可以直接拖动卡片调整展示顺序。</p>
+            <p class="muted compact-note-inline">这里和愿望管理页保持同一顺序。你可以左右拖动换位，也可以直接新增愿望。</p>
           </div>
           <div class="section-actions">
             <a class="ghost-button small" href="goals.html">查看全部愿望</a>
             <a class="ghost-button small" href="records.html">查看收入记录</a>
           </div>
         </div>
+
         <div class="section-actions mobile-quick-goal-action">
           <button class="solid-button small" id="openQuickGoalFormButton" type="button">新增愿望</button>
         </div>
+
         <details class="quick-goal-panel" id="quickGoalPanel">
           <summary class="quick-goal-summary">新增愿望</summary>
           <form class="quick-goal-form" id="quickGoalForm">
@@ -129,13 +133,17 @@
               <input name="target" type="number" min="1" step="1" placeholder="2000" required>
             </label>
             <label>
-              <span>已存金额</span>
+              <span>已攒金额</span>
               <input name="baseSaved" type="number" min="0" step="1" placeholder="0">
             </label>
             <label>
               <span>图标</span>
               <input name="icon" type="text" maxlength="4" placeholder="旅 / 书 / 家">
             </label>
+            <div class="quick-goal-form-full icon-picker-field">
+              <span>图标库</span>
+              <div class="icon-picker-grid" id="quickGoalIconPicker"></div>
+            </div>
             <label class="quick-goal-form-full">
               <span>图片 URL</span>
               <input name="image" type="text" placeholder="可选：给愿望加一张图片">
@@ -143,7 +151,7 @@
             <label class="quick-goal-form-full image-upload-stack">
               <span>本地上传图片</span>
               <input id="quickGoalImageFile" type="file" accept="image/*">
-              <small class="form-hint">手机和电脑都可以直接选本地图片，选好后会自动填入上面的图片内容。</small>
+              <small class="form-hint">手机和电脑都可以直接选图，选好后会自动填入上面的图片地址。</small>
             </label>
             <label class="toggle-chip">
               <input name="hasDeadline" type="checkbox">
@@ -168,9 +176,10 @@
             <p class="form-hint quick-goal-form-full" id="quickGoalFormHint">新建后会马上同步到主页愿望进度板。</p>
           </form>
         </details>
+
         <div class="slider-shell">
           <div class="slider-toolbar">
-            <p class="muted">点击卡片直接进入详情页继续修改。</p>
+            <p class="muted">点击卡片可以进入对应愿望详情，拖动时可以直接跨很多项换位置。</p>
             <div class="section-actions">
               <label>
                 <span>货架行数</span>
@@ -184,22 +193,31 @@
         </div>
       </section>
 
-      <section class="hero-mini-metrics reveal hero-mini-metrics-compact">
-        <div class="compact-panel">
-          <span>活跃愿望</span>
-          <strong id="heroGoalCount">0</strong>
+      <section class="panel reveal panel-tight metrics-panel">
+        <div class="section-head compact">
+          <div>
+            <p class="section-kicker">Overview</p>
+            <h2>数据概览</h2>
+            <p class="muted compact-note-inline">这里只保留最基础的累计数据，方便快速扫一眼。</p>
+          </div>
         </div>
-        <div class="compact-panel">
-          <span>收入记录</span>
-          <strong id="heroIncomeCount">0</strong>
-        </div>
-        <div class="compact-panel">
-          <span>累计收入</span>
-          <strong id="compactTotalIncome">0 元</strong>
-        </div>
-        <div class="compact-panel">
-          <span>进入愿望的钱</span>
-          <strong id="compactGoalMoney">0 元</strong>
+        <div class="hero-mini-metrics hero-mini-metrics-compact metrics-grid">
+          <div class="compact-panel">
+            <span>活跃愿望</span>
+            <strong id="heroGoalCount">0</strong>
+          </div>
+          <div class="compact-panel">
+            <span>收入记录</span>
+            <strong id="heroIncomeCount">0</strong>
+          </div>
+          <div class="compact-panel">
+            <span>累计收入</span>
+            <strong id="compactTotalIncome">0 元</strong>
+          </div>
+          <div class="compact-panel">
+            <span>进入愿望的钱</span>
+            <strong id="compactGoalMoney">0 元</strong>
+          </div>
         </div>
       </section>
     </main>
@@ -232,8 +250,10 @@
     const openQuickGoalFormButtonEl = document.getElementById("openQuickGoalFormButton");
     const quoteTextEl = document.getElementById("heroQuoteText");
     const quoteAuthorEl = document.getElementById("heroQuoteAuthor");
+    const quickGoalIconPickerEl = document.getElementById("quickGoalIconPicker");
     let quoteDeck = [];
     let lastRenderedQuoteText = "";
+
     const themeInputs = {
       accent: document.getElementById("homeThemeAccent"),
       accentDeep: document.getElementById("homeThemeAccentDeep"),
@@ -241,6 +261,7 @@
       bgStart: document.getElementById("homeThemeBgStart"),
       bgEnd: document.getElementById("homeThemeBgEnd")
     };
+
     const themePreviewDots = {
       accent: document.getElementById("previewHomeThemeAccent"),
       accentDeep: document.getElementById("previewHomeThemeAccentDeep"),
@@ -296,6 +317,7 @@
     homeWishShelfRowsSelectEl.addEventListener("input", syncWishShelfRowsFromInput);
 
     quickGoalFormEl.elements.hasDeadline.addEventListener("change", syncQuickGoalDeadlineState);
+    quickGoalFormEl.elements.icon.addEventListener("input", syncQuickGoalIconPicker);
 
     quickGoalImageFileEl.addEventListener("change", async () => {
       const file = quickGoalImageFileEl.files?.[0];
@@ -527,6 +549,15 @@
       renderHomePage();
     });
 
+    quickGoalIconPickerEl.addEventListener("click", (event) => {
+      const button = event.target.closest("[data-icon-value]");
+      if (!button) {
+        return;
+      }
+      quickGoalFormEl.elements.icon.value = button.dataset.iconValue || "";
+      syncQuickGoalIconPicker();
+    });
+
     window.addEventListener("pageshow", () => {
       renderQuote(true);
       renderHomePage();
@@ -535,8 +566,9 @@
 
     document.addEventListener("visibilitychange", () => {
       if (!document.hidden) {
-        renderQuote(true);
+        return;
       }
+      quoteDeck = [];
     });
 
     function readFileAsDataUrl(file) {
@@ -591,7 +623,7 @@
       quoteTextEl.textContent = quote.text;
       quoteAuthorEl.textContent = quote.author;
       sessionStorage.setItem("wish-grocery-last-quote", quote.text);
-      sessionStorage.setItem("wish-grocery-quote-history", JSON.stringify([...history, quote.text].slice(-48)));
+      sessionStorage.setItem("wish-grocery-quote-history", JSON.stringify([...history, quote.text].slice(-96)));
     }
 
     async function syncAdminEntry() {
@@ -611,6 +643,20 @@
       });
     }
 
+    function renderIconPicker(container, input) {
+      const currentValue = String(input.value || "").trim();
+      const chips = BudgetCore.getGoalIconLibrary().map((item) => `
+        <button class="icon-picker-chip ${currentValue === item.value ? "is-active" : ""}" type="button" data-icon-value="${BudgetCore.escapeHtml(item.value)}" title="${BudgetCore.escapeHtml(item.label)}" aria-label="选择${BudgetCore.escapeHtml(item.label)}图标">
+          ${BudgetCore.escapeHtml(item.value)}
+        </button>
+      `).join("");
+      container.innerHTML = chips;
+    }
+
+    function syncQuickGoalIconPicker() {
+      renderIconPicker(quickGoalIconPickerEl, quickGoalFormEl.elements.icon);
+    }
+
     function syncQuickGoalDeadlineState() {
       quickGoalFormEl.elements.deadline.disabled = !quickGoalFormEl.elements.hasDeadline.checked;
       if (!quickGoalFormEl.elements.hasDeadline.checked) {
@@ -624,6 +670,7 @@
       quickGoalFormEl.elements.hasDeadline.checked = false;
       quickGoalFormHintEl.textContent = "新建后会马上同步到主页愿望进度板。";
       syncQuickGoalDeadlineState();
+      syncQuickGoalIconPicker();
     }
 
     function getActiveGoalViews() {
@@ -631,7 +678,7 @@
     }
 
     function buildGoalShelfRows(goalViews, rows) {
-      const rowCount = Math.max(1, Math.min(Number(rows || 2), 99));
+      const rowCount = Math.max(1, Math.min(Number(rows || 2), 999));
       const shelves = Array.from({ length: rowCount }, () => []);
       goalViews.forEach((goal, index) => {
         shelves[index % rowCount].push(goal);
@@ -646,9 +693,7 @@
       const cards = pinnedGoals.map((goal, index) => {
         const percent = Math.round(goal.progress * 100);
         const deadlineText = goal.hasDeadline && goal.deadline ? BudgetCore.formatDate(goal.deadline) : "自由推进";
-        const imageMarkup = goal.image
-          ? `<img class="priority-card-backdrop" alt="" src="${BudgetCore.escapeHtml(goal.image)}">`
-          : "";
+        const imageMarkup = goal.image ? `<img class="priority-card-backdrop" alt="" src="${BudgetCore.escapeHtml(goal.image)}">` : "";
 
         return `
           <article class="priority-card priority-card-compact ${goal.image ? "has-image" : ""}" data-goal-id="${goal.id}" style="border-color:${goal.color}55;">
@@ -656,7 +701,7 @@
             <div class="priority-topline">
               <span class="priority-rank">TOP ${index + 1}</span>
               <div class="priority-quick-actions">
-                <button class="priority-drag-handle" type="button" draggable="true" data-drag-handle="true" aria-label="拖动调整顺序" title="拖动调整顺序">拖动</button>
+                <button class="priority-drag-handle" type="button" draggable="true" data-drag-handle="true" aria-label="拖动调整顺序" title="拖动调整顺序">移</button>
                 <button class="ghost-button small priority-mini-button" type="button" data-home-action="move-left" data-goal-id="${goal.id}">左</button>
                 <button class="ghost-button small priority-mini-button" type="button" data-home-action="move-right" data-goal-id="${goal.id}">右</button>
                 <a class="ghost-button small priority-card-link priority-mini-link text-link" href="goal-detail.html?id=${encodeURIComponent(goal.id)}">详情</a>
@@ -668,7 +713,7 @@
               </div>
               <div class="priority-summary-block">
                 <strong>${BudgetCore.escapeHtml(goal.name)}</strong>
-                <p>${BudgetCore.formatCurrency(goal.saved)} / ${BudgetCore.formatCurrency(goal.target)}</p>
+                <p>已攒 ${BudgetCore.formatCurrency(goal.saved)} · 还差 ${BudgetCore.formatCurrency(goal.remaining)}</p>
               </div>
               <b class="priority-percent-badge">${percent}%</b>
             </div>
@@ -676,7 +721,7 @@
               <div style="width:${percent}%;background:${goal.color};"></div>
             </div>
             <div class="priority-footer-line">
-              <span>还差 ${BudgetCore.formatCurrency(goal.remaining)}</span>
+              <span class="priority-target-chip">目标 ${BudgetCore.formatCurrency(goal.target)}</span>
               <span class="priority-deadline-pill">${deadlineText}</span>
             </div>
           </article>
@@ -706,11 +751,12 @@
       const rows = state.ui?.wishShelfRows || 2;
       homeWishShelfRowsSelectEl.value = String(rows);
       const shelfRows = buildGoalShelfRows(goalViews, rows);
+
       sliderTrackEl.innerHTML = shelfRows.map((rowGoals, rowIndex) => `
         <section class="wish-shelf-row">
           <div class="wish-shelf-head">
             <strong>愿望货架 ${rowIndex + 1}</strong>
-            <span class="muted">每行最多放 10 个愿望，默认先看到 5 个。</span>
+            <span class="muted">每一行最多放 10 个愿望，默认先看到 5 个，左右滑动继续看。</span>
           </div>
           <div class="wish-shelf-track" data-row-index="${rowIndex}">
             ${rowGoals.length ? rowGoals.map((goal, index) => {
@@ -739,7 +785,7 @@
                   </div>
                   <div class="goal-finance">
                     <div class="goal-meta">
-                      <span>已存</span>
+                      <span>已攒</span>
                       <strong>${BudgetCore.formatCurrency(goal.saved)}</strong>
                     </div>
                     <div class="goal-meta">
@@ -777,6 +823,7 @@
         quickGoalFormEl.elements.color.value = state.ui.theme?.accent || "#d08e73";
       }
       syncQuickGoalDeadlineState();
+      syncQuickGoalIconPicker();
       renderMainGoals(goalViews);
       renderGoalSlider(goalViews);
       renderMetrics(goalViews);
