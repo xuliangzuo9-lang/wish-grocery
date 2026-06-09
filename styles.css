@@ -1028,8 +1028,8 @@ label span {
 
 .detail-hero {
   display: grid;
-  grid-template-columns: 1.2fr 0.8fr;
-  gap: 22px;
+  grid-template-columns: minmax(260px, 0.9fr) minmax(0, 1.25fr);
+  gap: 24px;
 }
 
 .detail-summary {
@@ -1057,40 +1057,125 @@ label span {
 }
 
 .detail-hero-card {
+  position: relative;
   display: grid;
-  gap: 14px;
+  gap: 18px;
+  min-height: 420px;
+  padding: 24px;
+  overflow: hidden;
+  background:
+    linear-gradient(180deg, rgba(19, 15, 11, 0.14), rgba(19, 15, 11, 0.58)),
+    linear-gradient(135deg, rgba(var(--accent-rgb), 0.16), rgba(var(--gold-rgb), 0.14));
+}
+
+.detail-hero-backdrop {
+  position: absolute;
+  inset: 0;
+  background-position: center;
+  background-size: cover;
+  background-repeat: no-repeat;
+  opacity: 0;
+  transform: scale(1.04);
+  transition: opacity 220ms ease, transform 320ms ease;
+}
+
+.detail-hero-card.has-photo .detail-hero-backdrop {
+  opacity: 0.98;
+  transform: scale(1);
+}
+
+.detail-hero-card > * {
+  position: relative;
+  z-index: 1;
 }
 
 .detail-hero-card-head {
   display: flex;
   justify-content: space-between;
-  align-items: flex-start;
-  gap: 16px;
+  align-items: center;
+  gap: 20px;
 }
 
 .detail-hero-card-copy {
   min-width: 0;
+  display: grid;
+  gap: 10px;
+  color: #fff8f3;
 }
 
 .detail-hero-card-copy h3 {
-  margin: 0 0 6px;
+  margin: 0;
+  font-size: clamp(1.5rem, 2.4vw, 2.3rem);
+  line-height: 1.08;
+  text-shadow: 0 12px 28px rgba(0, 0, 0, 0.24);
+}
+
+.detail-hero-card-copy small {
+  color: rgba(255, 248, 243, 0.84);
+  font-size: 0.94rem;
+}
+
+.detail-hero-status-pill {
+  display: inline-flex;
+  align-items: center;
+  width: fit-content;
+  padding: 7px 12px;
+  border-radius: 999px;
+  background: rgba(255, 252, 248, 0.18);
+  border: 1px solid rgba(255, 255, 255, 0.26);
+  color: #fff8f3;
+  font-size: 0.82rem;
+  letter-spacing: 0.04em;
+  backdrop-filter: blur(10px);
+}
+
+.detail-progress-wrap {
+  display: grid;
+  justify-items: center;
+  gap: 10px;
+  min-width: 136px;
+}
+
+.detail-progress-ring {
+  width: 122px;
+  height: 122px;
+  font-size: 1.15rem;
+  background:
+    radial-gradient(circle closest-side, rgba(255, 250, 245, 0.98) 65%, transparent 66% 100%),
+    conic-gradient(var(--goal-color, var(--accent)) var(--progress), rgba(255, 252, 248, 0.18) 0deg);
+  box-shadow:
+    0 22px 40px rgba(15, 10, 7, 0.22),
+    inset 0 1px 0 rgba(255, 255, 255, 0.72);
+}
+
+.detail-progress-label {
+  color: rgba(255, 248, 243, 0.84);
+  font-size: 0.84rem;
 }
 
 .detail-hero-visual {
-  min-height: 180px;
-  border-radius: 22px;
-  border: 1px solid var(--panel-border);
-  background: linear-gradient(135deg, rgba(var(--accent-rgb), 0.08), rgba(var(--gold-rgb), 0.12));
+  width: 92px;
+  height: 92px;
+  border-radius: 26px;
+  border: 1px solid rgba(255, 255, 255, 0.26);
+  background: rgba(255, 252, 248, 0.18);
   display: grid;
   place-items: center;
-  font-size: clamp(2.4rem, 6vw, 4rem);
+  font-size: clamp(2rem, 4.5vw, 3.4rem);
   overflow: hidden;
+  backdrop-filter: blur(10px);
 }
 
 .detail-hero-visual img {
   width: 100%;
   height: 100%;
   object-fit: cover;
+}
+
+.detail-hero-card .goal-tip {
+  max-width: 56ch;
+  color: rgba(255, 248, 243, 0.9);
+  text-shadow: 0 10px 24px rgba(0, 0, 0, 0.18);
 }
 
 .empty-shelf-slot {

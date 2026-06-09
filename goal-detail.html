@@ -50,13 +50,18 @@
               </div>
             </div>
           </div>
-          <div class="panel detail-hero-card">
+          <div class="panel detail-hero-card" id="detailHeroCard">
+            <div class="detail-hero-backdrop" id="detailHeroBackdrop"></div>
             <div class="detail-hero-card-head">
               <div class="detail-hero-card-copy">
+                <span class="detail-hero-status-pill" id="detailHeroStatusPill">活跃目标</span>
                 <h3 id="detailCardName">-</h3>
                 <small id="detailCardDeadline">不设计划时间</small>
               </div>
-              <div class="progress-ring" id="detailProgressRing">0%</div>
+              <div class="detail-progress-wrap">
+                <div class="progress-ring detail-progress-ring" id="detailProgressRing">0%</div>
+                <span class="detail-progress-label">当前进度</span>
+              </div>
             </div>
             <div class="detail-hero-visual" id="detailHeroVisual">愿</div>
             <p class="goal-tip" id="detailMetaTip"></p>
@@ -162,6 +167,9 @@
     const detailGoalRemainingEl = document.getElementById("detailGoalRemaining");
     const detailCardNameEl = document.getElementById("detailCardName");
     const detailCardDeadlineEl = document.getElementById("detailCardDeadline");
+    const detailHeroCardEl = document.getElementById("detailHeroCard");
+    const detailHeroBackdropEl = document.getElementById("detailHeroBackdrop");
+    const detailHeroStatusPillEl = document.getElementById("detailHeroStatusPill");
     const detailProgressRingEl = document.getElementById("detailProgressRing");
     const detailHeroVisualEl = document.getElementById("detailHeroVisual");
     const detailMetaTipEl = document.getElementById("detailMetaTip");
@@ -277,12 +285,19 @@
       detailGoalRemainingEl.textContent = BudgetCore.formatCurrency(renderGoal.remaining);
       detailCardNameEl.textContent = renderGoal.name;
       detailCardDeadlineEl.textContent = renderGoal.hasDeadline && renderGoal.deadline ? `计划时间：${BudgetCore.formatDate(renderGoal.deadline)}` : "不设计划时间";
+      detailHeroStatusPillEl.textContent = renderGoal.status === "completed" ? "已完成目标" : (renderGoal.isPinned ? "主要目标" : "活跃目标");
       detailProgressRingEl.textContent = `${percent}%`;
       detailProgressRingEl.style.setProperty("--progress", `${percent * 3.6}deg`);
       detailProgressRingEl.style.setProperty("--goal-color", renderGoal.color);
-      detailHeroVisualEl.innerHTML = renderGoal.image
-        ? `<img alt="${BudgetCore.escapeHtml(renderGoal.name)}" src="${BudgetCore.escapeHtml(renderGoal.image)}">`
-        : BudgetCore.escapeHtml(renderGoal.icon || "愿");
+      detailHeroCardEl.style.setProperty("--detail-goal-color", renderGoal.color);
+      if (renderGoal.image) {
+        detailHeroCardEl.classList.add("has-photo");
+        detailHeroBackdropEl.style.backgroundImage = `url("${BudgetCore.escapeHtml(renderGoal.image)}")`;
+      } else {
+        detailHeroCardEl.classList.remove("has-photo");
+        detailHeroBackdropEl.style.backgroundImage = "none";
+      }
+      detailHeroVisualEl.innerHTML = BudgetCore.escapeHtml(renderGoal.icon || "愿");
       detailMetaTipEl.textContent = renderGoal.note ? `${renderGoal.note} · ${renderGoal.tip}` : renderGoal.tip;
 
       detailTogglePinEl.textContent = renderGoal.isPinned ? "取消主要目标" : "设为主要目标";
