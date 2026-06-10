@@ -596,5 +596,65 @@
       renderDetail();
     })();
   </script>
+  <script>
+    (() => {
+      function ensureIconCollapse(fieldEl, builderEl, key, closedText, openText) {
+        if (!fieldEl || !builderEl) {
+          return;
+        }
+        const parent = fieldEl.parentElement;
+        if (!parent) {
+          return;
+        }
+        let toggle = parent.querySelector(`[data-icon-toggle="${key}"]`);
+        let shell = parent.querySelector(`[data-icon-shell="${key}"]`);
+        if (!toggle) {
+          toggle = document.createElement("button");
+          toggle.type = "button";
+          toggle.className = "icon-picker-toggle";
+          toggle.dataset.iconToggle = key;
+          parent.insertBefore(toggle, fieldEl);
+        }
+        if (!shell) {
+          shell = document.createElement("div");
+          shell.className = "icon-picker-collapsible icon-picker-shell";
+          shell.dataset.iconShell = key;
+          shell.hidden = true;
+          parent.insertBefore(shell, toggle.nextSibling);
+        }
+        if (!shell.contains(fieldEl)) {
+          shell.appendChild(fieldEl);
+        }
+        if (!shell.contains(builderEl)) {
+          shell.appendChild(builderEl);
+        }
+        const sync = () => {
+          toggle.textContent = shell.hidden ? closedText : openText;
+        };
+        if (!toggle.dataset.bound) {
+          toggle.addEventListener("click", () => {
+            shell.hidden = !shell.hidden;
+            sync();
+          });
+          toggle.dataset.bound = "true";
+        }
+        sync();
+      }
+
+      const previousRenderDetail = renderDetail;
+      renderDetail = function () {
+        previousRenderDetail();
+        ensureIconCollapse(
+          document.querySelector("#detailGoalForm .icon-picker-field"),
+          document.querySelector("#detailGoalForm .custom-icon-builder"),
+          "detail-form",
+          "展开图标库",
+          "收起图标库"
+        );
+      };
+
+      renderDetail();
+    })();
+  </script>
 </body>
 </html>

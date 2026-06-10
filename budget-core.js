@@ -1063,6 +1063,37 @@ function updateWishShelf(state, shelfId, updates = {}) {
   return { ok: true, shelf: { ...shelf } };
 }
 
+function addWishShelf(state) {
+  const shelves = normalizeWishShelves(state.ui?.wishShelves, state.ui?.wishShelfRows || 2);
+  const nextIndex = shelves.length;
+  const shelf = createDefaultWishShelf(nextIndex, palette[nextIndex % palette.length]);
+  shelf.id = `shelf-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+  shelf.name = `愿望货架 ${nextIndex + 1}`;
+  shelves.push(shelf);
+  state.ui.wishShelves = shelves;
+  state.ui.wishShelfRows = shelves.length;
+  saveState(state);
+  return { ok: true, shelf: { ...shelf } };
+}
+
+function moveWishShelf(state, shelfId, direction) {
+  const shelves = normalizeWishShelves(state.ui?.wishShelves, state.ui?.wishShelfRows || 2);
+  const index = shelves.findIndex((item) => item.id === shelfId);
+  if (index < 0) {
+    return { ok: false, reason: "missing" };
+  }
+  const targetIndex = direction === "up" ? index - 1 : index + 1;
+  if (targetIndex < 0 || targetIndex >= shelves.length) {
+    return { ok: false, reason: "edge" };
+  }
+  const [shelf] = shelves.splice(index, 1);
+  shelves.splice(targetIndex, 0, shelf);
+  state.ui.wishShelves = shelves;
+  state.ui.wishShelfRows = shelves.length;
+  saveState(state);
+  return { ok: true };
+}
+
 function deleteWishShelf(state, shelfId) {
   const shelves = normalizeWishShelves(state.ui?.wishShelves, state.ui?.wishShelfRows || 2);
   if (shelves.length <= 1) {
@@ -1211,6 +1242,8 @@ window.BudgetCore = {
   updateTheme,
   updateWishShelfRows,
   updateWishShelf,
+  addWishShelf,
+  moveWishShelf,
   deleteWishShelf,
   setAllocationVisibility,
   setAllocationVisibilityByKey,

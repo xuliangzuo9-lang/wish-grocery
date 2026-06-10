@@ -1251,5 +1251,142 @@
       renderGoalsPage();
     })();
   </script>
+  <script>
+    (() => {
+      function ensureIconCollapse(fieldEl, builderEl, key, closedText, openText) {
+        if (!fieldEl || !builderEl) {
+          return;
+        }
+        const parent = fieldEl.parentElement;
+        if (!parent) {
+          return;
+        }
+        let toggle = parent.querySelector(`[data-icon-toggle="${key}"]`);
+        let shell = parent.querySelector(`[data-icon-shell="${key}"]`);
+        if (!toggle) {
+          toggle = document.createElement("button");
+          toggle.type = "button";
+          toggle.className = "icon-picker-toggle";
+          toggle.dataset.iconToggle = key;
+          parent.insertBefore(toggle, fieldEl);
+        }
+        if (!shell) {
+          shell = document.createElement("div");
+          shell.className = "icon-picker-collapsible icon-picker-shell";
+          shell.dataset.iconShell = key;
+          shell.hidden = true;
+          parent.insertBefore(shell, toggle.nextSibling);
+        }
+        if (!shell.contains(fieldEl)) {
+          shell.appendChild(fieldEl);
+        }
+        if (!shell.contains(builderEl)) {
+          shell.appendChild(builderEl);
+        }
+        const sync = () => {
+          toggle.textContent = shell.hidden ? closedText : openText;
+        };
+        if (!toggle.dataset.bound) {
+          toggle.addEventListener("click", () => {
+            shell.hidden = !shell.hidden;
+            sync();
+          });
+          toggle.dataset.bound = "true";
+        }
+        sync();
+      }
+
+      function ensureGoalsShelfToolbar() {
+        const controls = activeGoalsGridEl.closest(".panel")?.querySelector(".section-actions");
+        if (!controls || controls.querySelector("[data-goal-shelf-add]")) {
+          return;
+        }
+        const button = document.createElement("button");
+        button.type = "button";
+        button.className = "shelf-mini-button";
+        button.dataset.goalShelfAdd = "true";
+        button.textContent = "新增货架";
+        controls.insertBefore(button, controls.lastElementChild);
+      }
+
+      renderActiveGoalShelves = function (goals) {
+        const shelves = BudgetCore.getGoalsByShelf(state).map((shelf) => ({
+          ...shelf,
+          goals: goals.filter((goal) => goal.shelfId === shelf.id)
+        }));
+        goalShelfRowsSelectEl.value = String(shelves.length);
+
+        return shelves.map((shelf, index) => `
+          <section class="wish-shelf-row" style="--shelf-color:${shelf.color};">
+            <div class="wish-shelf-head wish-shelf-head-editor">
+              <div class="wish-shelf-config-grid">
+                <label class="wish-shelf-config-field">
+                  <span>货架名称</span>
+                  <input data-shelf-id="${shelf.id}" data-shelf-config="name" type="text" value="${BudgetCore.escapeHtml(shelf.name)}">
+                </label>
+              </div>
+              <div class="shelf-compact-tools">
+                <button class="shelf-mini-button" type="button" data-shelf-move="${shelf.id}" data-direction="up" ${index === 0 ? "disabled" : ""}>上移</button>
+                <button class="shelf-mini-button" type="button" data-shelf-move="${shelf.id}" data-direction="down" ${index === shelves.length - 1 ? "disabled" : ""}>下移</button>
+                <button class="shelf-delete-button" type="button" data-shelf-delete="${shelf.id}">删除货架</button>
+              </div>
+              <span class="muted">这一层展示 ${shelf.goals.length} 个愿望。卡片顺序和主页同步，拖动即可跨位置调整。</span>
+            </div>
+            <div class="wish-shelf-track" data-shelf-id="${shelf.id}">
+              ${shelf.goals.length ? renderGoalCards(shelf.goals, "active") : `
+                <div class="empty-shelf-slot" data-shelf-id="${shelf.id}">
+                  <strong>这是空货架</strong>
+                  <p>你可以继续新增愿望到这里，也可以直接删除这个空货架。</p>
+                  <button class="shelf-delete-button" type="button" data-shelf-delete="${shelf.id}">删除这个空货架</button>
+                </div>
+              `}
+            </div>
+          </section>
+        `).join("");
+      };
+
+      document.addEventListener("click", (event) => {
+        const addButton = event.target.closest("[data-goal-shelf-add]");
+        if (addButton) {
+          BudgetCore.addWishShelf(state);
+          state = BudgetCore.loadState();
+          renderShelfSelectOptions(goalShelfSelectEl, goalFormEl.elements.shelfId.value || getWishShelves()[0]?.id || "");
+          renderGoalsPage();
+          event.preventDefault();
+          event.stopImmediatePropagation();
+          return;
+        }
+
+        const moveButton = event.target.closest("#activeGoalsGrid [data-shelf-move]");
+        if (moveButton) {
+          const shelfId = moveButton.dataset.shelfMove;
+          const direction = moveButton.dataset.direction;
+          if (shelfId && direction) {
+            BudgetCore.moveWishShelf(state, shelfId, direction);
+            state = BudgetCore.loadState();
+            renderShelfSelectOptions(goalShelfSelectEl, goalFormEl.elements.shelfId.value || getWishShelves()[0]?.id || "");
+            renderGoalsPage();
+          }
+          event.preventDefault();
+          event.stopImmediatePropagation();
+        }
+      }, true);
+
+      const previousRenderGoalsPage = renderGoalsPage;
+      renderGoalsPage = function () {
+        previousRenderGoalsPage();
+        ensureGoalsShelfToolbar();
+        ensureIconCollapse(
+          document.querySelector("#goalForm .icon-picker-field"),
+          document.querySelector("#goalForm .custom-icon-builder"),
+          "goals-form",
+          "展开图标库",
+          "收起图标库"
+        );
+      };
+
+      renderGoalsPage();
+    })();
+  </script>
 </body>
 </html>
