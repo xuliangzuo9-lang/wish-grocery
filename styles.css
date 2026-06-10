@@ -998,6 +998,32 @@ label span {
   width: min(100%, 520px);
 }
 
+.wish-shelf-head-actions {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-left: auto;
+}
+
+.shelf-delete-button {
+  min-height: 34px;
+  padding: 0 12px;
+  border-radius: 999px;
+  border: 1px solid rgba(181, 95, 78, 0.22);
+  background: rgba(255, 245, 242, 0.92);
+  color: #9b5d50;
+  font: inherit;
+  font-size: 0.78rem;
+  cursor: pointer;
+  transition: background 180ms ease, border-color 180ms ease, transform 180ms ease;
+}
+
+.shelf-delete-button:hover {
+  background: rgba(250, 229, 223, 0.96);
+  border-color: rgba(181, 95, 78, 0.34);
+  transform: translateY(-1px);
+}
+
 .wish-shelf-config-field {
   gap: 6px;
 }
@@ -1171,10 +1197,15 @@ label span {
   margin: 0;
 }
 
-.main-target-grid {
+.main-target-grid,
+.main-target-slider {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-auto-flow: column;
+  grid-auto-columns: minmax(220px, 1fr);
   gap: 10px;
+  overflow-x: auto;
+  padding-bottom: 6px;
+  scroll-snap-type: x proximity;
 }
 
 .main-target-tile {
@@ -1191,6 +1222,7 @@ label span {
   display: grid;
   grid-template-rows: auto 1fr auto auto;
   gap: 10px;
+  scroll-snap-align: start;
 }
 
 .main-target-tile.has-photo {
@@ -1219,6 +1251,12 @@ label span {
   align-items: center;
   justify-content: space-between;
   gap: 10px;
+}
+
+.main-target-top-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 
 .detail-inline-button {
@@ -1468,14 +1506,14 @@ label span {
 }
 
 .detail-hero-card.has-photo .detail-hero-image-haze {
-  opacity: 1;
+  opacity: 0.42;
 }
 
 .detail-hero-overlay {
   position: absolute;
   inset: 0;
   background:
-    linear-gradient(180deg, rgba(14, 11, 9, 0.02) 0%, rgba(14, 11, 9, 0.08) 24%, rgba(14, 11, 9, 0.26) 52%, rgba(14, 11, 9, 0.66) 100%),
+    linear-gradient(180deg, rgba(14, 11, 9, 0.01) 0%, rgba(14, 11, 9, 0.04) 26%, rgba(14, 11, 9, 0.18) 52%, rgba(14, 11, 9, 0.48) 100%),
     radial-gradient(circle at top right, rgba(255, 255, 255, 0.14), transparent 28%);
 }
 
@@ -1735,7 +1773,13 @@ label span {
 }
 
 .icon-picker-chip {
-  min-height: 42px;
+  position: relative;
+  min-height: 52px;
+}
+
+.icon-picker-chip-select {
+  width: 100%;
+  min-height: 52px;
   border-radius: 14px;
   border: 1px solid var(--panel-border);
   background: rgba(255, 255, 255, 0.78);
@@ -1746,9 +1790,28 @@ label span {
   justify-items: center;
   align-content: center;
   gap: 2px;
-  padding: 6px 4px;
+  padding: 8px 6px;
   cursor: pointer;
   transition: transform 180ms ease, border-color 180ms ease, background 180ms ease;
+}
+
+.icon-picker-chip-remove {
+  position: absolute;
+  top: -6px;
+  right: -6px;
+  width: 22px;
+  height: 22px;
+  border: 1px solid rgba(var(--accent-rgb), 0.22);
+  border-radius: 999px;
+  background: rgba(255, 248, 244, 0.96);
+  color: var(--accent-deep);
+  font: inherit;
+  font-size: 0.9rem;
+  line-height: 1;
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  box-shadow: 0 6px 14px rgba(0, 0, 0, 0.08);
 }
 
 .icon-picker-chip-icon {
@@ -1762,8 +1825,8 @@ label span {
   line-height: 1.2;
 }
 
-.icon-picker-chip:hover,
-.icon-picker-chip.is-active {
+.icon-picker-chip:hover .icon-picker-chip-select,
+.icon-picker-chip.is-active .icon-picker-chip-select {
   transform: translateY(-1px);
   background: rgba(var(--accent-rgb), 0.12);
   border-color: rgba(var(--accent-rgb), 0.32);
@@ -2449,9 +2512,13 @@ label span {
     grid-template-columns: 1fr;
   }
 
-  .home-hero-layout,
-  .main-target-grid {
+  .home-hero-layout {
     grid-template-columns: 1fr;
+  }
+
+  .main-target-grid,
+  .main-target-slider {
+    grid-auto-columns: minmax(240px, 86vw);
   }
 
   .wish-shelf-track {
@@ -2472,6 +2539,10 @@ label span {
 
   .wish-shelf-config-grid {
     width: 100%;
+  }
+
+  .wish-shelf-head-actions {
+    margin-left: 0;
   }
 
   .mobile-quick-goal-action {
@@ -2523,7 +2594,7 @@ label span {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
-  .icon-picker-chip {
+  .icon-picker-chip-select {
     min-height: 58px;
     padding: 8px 6px;
   }
