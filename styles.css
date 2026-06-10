@@ -1573,14 +1573,14 @@ label span {
 }
 
 .detail-hero-card.has-photo .detail-hero-image-haze {
-  opacity: 0.24;
+  opacity: 0.34;
 }
 
 .detail-hero-overlay {
   position: absolute;
   inset: 0;
   background:
-    linear-gradient(180deg, rgba(14, 11, 9, 0.01) 0%, rgba(14, 11, 9, 0.02) 34%, rgba(14, 11, 9, 0.1) 60%, rgba(14, 11, 9, 0.34) 100%),
+    linear-gradient(180deg, rgba(14, 11, 9, 0.18) 0%, rgba(14, 11, 9, 0.26) 30%, rgba(14, 11, 9, 0.42) 58%, rgba(14, 11, 9, 0.66) 100%),
     radial-gradient(circle at top right, rgba(255, 255, 255, 0.14), transparent 28%);
 }
 
@@ -1598,7 +1598,8 @@ label span {
 
 .detail-hero-topline .section-kicker {
   margin: 0;
-  color: rgba(255, 248, 243, 0.82);
+  color: rgba(255, 248, 243, 0.96);
+  text-shadow: 0 6px 18px rgba(0, 0, 0, 0.38);
 }
 
 .detail-hero-status-pill {
@@ -1607,12 +1608,13 @@ label span {
   width: fit-content;
   padding: 8px 14px;
   border-radius: 999px;
-  background: rgba(255, 252, 248, 0.16);
-  border: 1px solid rgba(255, 255, 255, 0.24);
-  color: #fff8f3;
+  background: rgba(18, 13, 10, 0.34);
+  border: 1px solid rgba(255, 255, 255, 0.32);
+  color: #fffdfa;
   font-size: 0.84rem;
   letter-spacing: 0.04em;
   backdrop-filter: blur(10px);
+  text-shadow: 0 4px 14px rgba(0, 0, 0, 0.32);
 }
 
 .detail-hero-stack {
@@ -1641,6 +1643,7 @@ label span {
   display: grid;
   gap: 14px;
   color: #fff8f3;
+  text-shadow: 0 10px 28px rgba(0, 0, 0, 0.42);
 }
 
 .detail-hero-copy-single {
@@ -1657,20 +1660,23 @@ label span {
   margin: 0;
   font-size: clamp(2.3rem, 4.5vw, 4.2rem);
   line-height: 1.02;
-  text-shadow: 0 12px 28px rgba(0, 0, 0, 0.28);
+  color: #fffdf8;
+  text-shadow: 0 14px 34px rgba(0, 0, 0, 0.5);
 }
 
 .detail-hero-intro {
   margin: 0;
   max-width: 18em;
-  color: rgba(255, 248, 243, 0.9);
+  color: rgba(255, 251, 246, 0.98);
   font-size: clamp(1rem, 1.6vw, 1.18rem);
   line-height: 1.65;
+  text-shadow: 0 10px 24px rgba(0, 0, 0, 0.42);
 }
 
 .detail-hero-deadline {
-  color: rgba(255, 248, 243, 0.82);
+  color: rgba(255, 249, 244, 0.96);
   font-size: 0.95rem;
+  text-shadow: 0 8px 20px rgba(0, 0, 0, 0.42);
 }
 
 .detail-hero-visual {
@@ -1785,6 +1791,11 @@ label span {
   font-weight: 700;
   letter-spacing: 0.04em;
   text-shadow: 0 2px 12px rgba(255, 255, 255, 0.72);
+  background: rgba(255, 247, 240, 0.9);
+  padding: 6px 14px;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.75);
+  box-shadow: 0 10px 22px rgba(29, 20, 14, 0.16);
 }
 
 .detail-gear-core {
@@ -1850,8 +1861,8 @@ label span {
 .detail-hero-note {
   margin: 0;
   max-width: 32rem;
-  color: rgba(255, 248, 243, 0.92);
-  text-shadow: 0 10px 24px rgba(0, 0, 0, 0.22);
+  color: rgba(255, 251, 246, 0.98);
+  text-shadow: 0 10px 24px rgba(0, 0, 0, 0.42);
 }
 
 .empty-shelf-slot {

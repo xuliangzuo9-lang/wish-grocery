@@ -598,7 +598,7 @@
   </script>
   <script>
     (() => {
-      function ensureIconCollapse(fieldEl, builderEl, key, closedText, openText) {
+      function ensureIconCollapse(fieldEl, builderEl, key, closedText, openText, defaultOpen = true) {
         if (!fieldEl || !builderEl) {
           return;
         }
@@ -606,8 +606,11 @@
         if (!parent) {
           return;
         }
-        let toggle = parent.querySelector(`[data-icon-toggle="${key}"]`);
-        let shell = parent.querySelector(`[data-icon-shell="${key}"]`);
+        const scope = fieldEl.closest("form") || builderEl.closest("form") || parent;
+        const toggles = [...scope.querySelectorAll(`[data-icon-toggle="${key}"]`)];
+        const shells = [...scope.querySelectorAll(`[data-icon-shell="${key}"]`)];
+        let toggle = toggles[0] || null;
+        let shell = shells[0] || null;
         if (!toggle) {
           toggle = document.createElement("button");
           toggle.type = "button";
@@ -619,9 +622,11 @@
           shell = document.createElement("div");
           shell.className = "icon-picker-collapsible icon-picker-shell";
           shell.dataset.iconShell = key;
-          shell.hidden = true;
+          shell.hidden = !defaultOpen;
           parent.insertBefore(shell, toggle.nextSibling);
         }
+        toggles.slice(1).forEach((item) => item.remove());
+        shells.slice(1).forEach((item) => item.remove());
         if (!shell.contains(fieldEl)) {
           shell.appendChild(fieldEl);
         }
