@@ -1106,5 +1106,257 @@
       renderHome();
     })();
   </script>
+  <script>
+    (() => {
+      let dragSession = null;
+      let suppressClicksUntil = 0;
+
+      renderQuickGoalIconPicker = function () {
+        const currentValue = String(quickGoalFormEl.elements.icon.value || "").trim();
+        quickGoalIconPickerEl.innerHTML = BudgetCore.getGoalIconLibrary(state).map((item) => `
+          <div class="icon-picker-chip ${currentValue === item.value ? "is-active" : ""}">
+            <button class="icon-picker-chip-select" type="button" data-icon-value="${BudgetCore.escapeHtml(item.value)}" title="${BudgetCore.escapeHtml(item.label)}" aria-label="select icon">
+              <span class="icon-picker-chip-icon">${BudgetCore.escapeHtml(item.value)}</span>
+              <span class="icon-picker-chip-label">${BudgetCore.escapeHtml(item.label)}</span>
+            </button>
+            <button class="icon-picker-chip-remove" type="button" data-icon-delete="true" data-icon-value="${BudgetCore.escapeHtml(item.value)}" data-icon-label="${BudgetCore.escapeHtml(item.label)}" aria-label="delete icon">x</button>
+          </div>
+        `).join("");
+      };
+
+      function clearDropMarks() {
+        document.querySelectorAll(".touch-drop-target").forEach((node) => node.classList.remove("touch-drop-target"));
+      }
+
+      function cleanupDrag() {
+        clearDropMarks();
+        if (dragSession?.card) {
+          dragSession.card.classList.remove("touch-source-card");
+        }
+        if (dragSession?.ghost?.isConnected) {
+          dragSession.ghost.remove();
+        }
+        dragSession = null;
+      }
+
+      function updateGhost(clientX, clientY) {
+        if (!dragSession?.ghost) {
+          return;
+        }
+        dragSession.ghost.style.left = `${clientX}px`;
+        dragSession.ghost.style.top = `${clientY}px`;
+      }
+
+      function updateDropTarget(clientX, clientY) {
+        if (!dragSession) {
+          return;
+        }
+        clearDropMarks();
+        dragSession.targetGoalId = null;
+        dragSession.targetShelfId = null;
+        const element = document.elementFromPoint(clientX, clientY);
+        if (!element) {
+          return;
+        }
+        const targetCard = element.closest(".home-goal-card[data-goal-id], .main-target-tile[data-goal-id]");
+        if (targetCard && targetCard.dataset.goalId !== dragSession.goalId) {
+          dragSession.targetGoalId = targetCard.dataset.goalId;
+          targetCard.classList.add("touch-drop-target");
+          return;
+        }
+        const emptyShelf = element.closest(".empty-shelf-slot[data-shelf-id]");
+        if (emptyShelf) {
+          dragSession.targetShelfId = emptyShelf.dataset.shelfId;
+          emptyShelf.classList.add("touch-drop-target");
+        }
+      }
+
+      function finishDrag(applyMove) {
+        if (!dragSession) {
+          return;
+        }
+        const sourceGoalId = dragSession.goalId;
+        const targetGoalId = dragSession.targetGoalId;
+        const targetShelfId = dragSession.targetShelfId;
+        cleanupDrag();
+        suppressClicksUntil = Date.now() + 400;
+        if (!applyMove) {
+          return;
+        }
+        if (targetGoalId) {
+          moveGoalBeforeTarget(sourceGoalId, targetGoalId);
+          return;
+        }
+        if (targetShelfId) {
+          BudgetCore.assignGoalToShelf(state, sourceGoalId, targetShelfId);
+          state = BudgetCore.loadState();
+          renderHome();
+        }
+      }
+
+      function startDrag(event, handle) {
+        const card = handle.closest(".home-goal-card[data-goal-id], .main-target-tile[data-goal-id]");
+        if (!card) {
+          return;
+        }
+        cleanupDrag();
+        const rect = card.getBoundingClientRect();
+        const ghost = card.cloneNode(true);
+        ghost.classList.add("touch-drag-ghost");
+        ghost.style.width = `${rect.width}px`;
+        ghost.style.height = `${rect.height}px`;
+        document.body.appendChild(ghost);
+        card.classList.add("touch-source-card");
+        dragSession = {
+          goalId: card.dataset.goalId,
+          pointerId: event.pointerId,
+          card,
+          ghost,
+          targetGoalId: null,
+          targetShelfId: null
+        };
+        updateGhost(event.clientX, event.clientY);
+        updateDropTarget(event.clientX, event.clientY);
+        event.preventDefault();
+        event.stopImmediatePropagation();
+      }
+
+      document.addEventListener("pointerdown", (event) => {
+        const handle = event.target.closest("#homeShelfBoard [data-drag-handle], #mainGoalsGrid [data-drag-handle]");
+        if (!handle) {
+          return;
+        }
+        startDrag(event, handle);
+      }, true);
+
+      document.addEventListener("pointermove", (event) => {
+        if (!dragSession || event.pointerId !== dragSession.pointerId) {
+          return;
+        }
+        updateGhost(event.clientX, event.clientY);
+        updateDropTarget(event.clientX, event.clientY);
+        event.preventDefault();
+      }, true);
+
+      document.addEventListener("pointerup", (event) => {
+        if (!dragSession || event.pointerId !== dragSession.pointerId) {
+          return;
+        }
+        finishDrag(true);
+        event.preventDefault();
+      }, true);
+
+      document.addEventListener("pointercancel", (event) => {
+        if (!dragSession || event.pointerId !== dragSession.pointerId) {
+          return;
+        }
+        finishDrag(false);
+      }, true);
+
+      document.addEventListener("click", (event) => {
+        if (event.target.closest("#homeShelfBoard [data-drag-handle], #mainGoalsGrid [data-drag-handle]")) {
+          event.preventDefault();
+          event.stopImmediatePropagation();
+          return;
+        }
+        if (Date.now() < suppressClicksUntil && event.target.closest("#homeShelfBoard, #mainGoalsGrid")) {
+          event.preventDefault();
+          event.stopImmediatePropagation();
+        }
+      }, true);
+
+      renderQuickGoalIconPicker();
+    })();
+  </script>
+  <script>
+    (() => {
+      renderShelves = function () {
+        const shelves = BudgetCore.getGoalsByShelf(state);
+        homeShelfRowsInputEl.value = String(shelves.length);
+        homeShelfBoardEl.innerHTML = shelves.map((shelf) => `
+          <section class="wish-shelf-row" style="--shelf-color:${shelf.color};">
+            <div class="wish-shelf-head wish-shelf-head-editor wish-shelf-head-home">
+              <div class="wish-shelf-config-grid">
+                <label class="wish-shelf-config-field">
+                  <span>货架名称</span>
+                  <input data-shelf-id="${shelf.id}" data-shelf-config="name" type="text" value="${BudgetCore.escapeHtml(shelf.name)}">
+                </label>
+              </div>
+              <div class="wish-shelf-head-actions">
+                <button class="shelf-delete-button" type="button" data-shelf-delete="${shelf.id}">删除货架</button>
+              </div>
+              <span class="muted">这一层现在有 ${shelf.goals.length} 个愿望。想删除货架时，需要先把愿望转走或清空。</span>
+            </div>
+            <div class="wish-shelf-track" data-shelf-id="${shelf.id}">
+              ${shelf.goals.length ? shelf.goals.map((goal) => renderHomeShelfCard(goal)).join("") : `
+                <div class="empty-shelf-slot" data-shelf-id="${shelf.id}">
+                  <strong>这是空货架</strong>
+                  <p>你可以继续新增愿望到这里，也可以直接删除这个空货架。</p>
+                  <p>如果以后这个货架里有愿望了，就需要先把愿望转移或清空，才能删除货架。</p>
+                  <button class="shelf-delete-button" type="button" data-shelf-delete="${shelf.id}">删除这个空货架</button>
+                </div>
+              `}
+            </div>
+          </section>
+        `).join("");
+      };
+
+      renderMainGoals = function () {
+        const pinnedGoals = BudgetCore.getActiveGoals(state).filter((goal) => goal.isPinned).slice(0, 3);
+        const cards = pinnedGoals.map((goal) => {
+          const percent = Math.round(goal.progress * 100);
+          const deadlineText = goal.hasDeadline && goal.deadline ? BudgetCore.formatDate(goal.deadline) : "不设时间";
+          const backgroundStyle = goal.image ? `--card-image:url('${BudgetCore.escapeHtml(goal.image)}');` : "";
+          return `
+            <article class="main-target-tile ${goal.image ? "has-photo" : ""}" data-goal-id="${goal.id}" style="--goal-color:${goal.color};${backgroundStyle}">
+              <div class="main-target-topline">
+                <span class="goal-state-pill">主要愿望</span>
+                <div class="main-target-top-actions">
+                  <button class="drag-handle-button" type="button" data-drag-handle data-goal-id="${goal.id}" title="drag">拖动</button>
+                  <button class="goal-action-button detail-inline-button" data-main-action="open" data-goal-id="${goal.id}" type="button">详情</button>
+                </div>
+              </div>
+              <div class="main-target-body">
+                <div class="main-target-visual">
+                  ${goal.image ? `<img alt="${BudgetCore.escapeHtml(goal.name)}" src="${BudgetCore.escapeHtml(goal.image)}">` : BudgetCore.escapeHtml(goal.icon || "愿")}
+                </div>
+                <div class="main-target-copy">
+                  <h3>${BudgetCore.escapeHtml(goal.name)}</h3>
+                  <small>${deadlineText}</small>
+                </div>
+              </div>
+              <div class="main-target-progress main-target-progress-rich">
+                <span>已攒 ${BudgetCore.formatCurrency(goal.saved)}</span>
+                <span>总额 ${BudgetCore.formatCurrency(goal.target)}</span>
+                <span>还差 ${BudgetCore.formatCurrency(goal.remaining)}</span>
+              </div>
+              <div class="main-target-progress"><span>${percent}%</span></div>
+              <div class="priority-progress"><div style="width:${percent}%; background:${goal.color};"></div></div>
+            </article>
+          `;
+        });
+
+        while (cards.length < 3) {
+          cards.push(`
+            <article class="main-target-tile empty">
+              <div class="main-target-body">
+                <div class="main-target-visual">+</div>
+                <div class="main-target-copy">
+                  <h3>添加主要愿望</h3>
+                  <small>还没凑满 3 个时，可以直接新增愿望</small>
+                </div>
+              </div>
+              <button class="goal-action-button detail-inline-button" type="button" data-main-add="true">去新增</button>
+              <div class="priority-progress"><div style="width:0%;"></div></div>
+            </article>
+          `);
+        }
+        mainGoalsGridEl.classList.add("main-target-slider");
+        mainGoalsGridEl.innerHTML = cards.join("");
+      };
+
+      renderHome();
+    })();
+  </script>
 </body>
 </html>
