@@ -867,5 +867,184 @@
 
     initGoalsPage();
   </script>
+  <script>
+    (() => {
+      let goalsMoveMode = false;
+
+      renderIconPicker = function (container, input) {
+        const currentValue = String(input.value || "").trim();
+        container.innerHTML = BudgetCore.getGoalIconLibrary(state).map((item) => `
+          <div class="icon-picker-chip ${currentValue === item.value ? "is-active" : ""}">
+            <button class="icon-picker-chip-select" type="button" data-icon-value="${BudgetCore.escapeHtml(item.value)}" title="${BudgetCore.escapeHtml(item.label)}" aria-label="选择${BudgetCore.escapeHtml(item.label)}图标">
+              <span class="icon-picker-chip-icon">${BudgetCore.escapeHtml(item.value)}</span>
+              <span class="icon-picker-chip-label">${BudgetCore.escapeHtml(item.label)}</span>
+            </button>
+            <button class="icon-picker-chip-remove" type="button" data-icon-delete="true" data-icon-value="${BudgetCore.escapeHtml(item.value)}" data-icon-label="${BudgetCore.escapeHtml(item.label)}" aria-label="删除${BudgetCore.escapeHtml(item.label)}图标">×</button>
+          </div>
+        `).join("");
+      };
+
+      renderActiveGoalShelves = function (goals) {
+        if (!goals.length) {
+          return `<div class="empty-state">还没有活跃愿望，先在右侧新增一个吧。</div>`;
+        }
+        const shelves = BudgetCore.getGoalsByShelf(state).map((shelf) => ({
+          ...shelf,
+          goals: goals.filter((goal) => goal.shelfId === shelf.id)
+        }));
+        goalShelfRowsSelectEl.value = String(shelves.length);
+
+        return shelves.map((shelf) => `
+          <section class="wish-shelf-row" style="--shelf-color:${shelf.color};">
+            <div class="wish-shelf-head wish-shelf-head-editor">
+              <div class="wish-shelf-config-grid">
+                <label class="wish-shelf-config-field">
+                  <span>货架名称</span>
+                  <input data-shelf-id="${shelf.id}" data-shelf-config="name" type="text" value="${BudgetCore.escapeHtml(shelf.name)}">
+                </label>
+              </div>
+              <div class="wish-shelf-head-actions">
+                <button class="shelf-delete-button" type="button" data-shelf-delete="${shelf.id}">删除货架</button>
+              </div>
+              <span class="muted">这一层展示 ${shelf.goals.length} 个愿望。删除货架前，需要先把愿望转移到别层或清空。</span>
+            </div>
+            <div class="wish-shelf-track" data-shelf-id="${shelf.id}">
+              ${shelf.goals.length ? renderGoalCards(shelf.goals, "active") : `<div class="empty-shelf-slot" data-shelf-id="${shelf.id}">这一层货架暂时还是空的，可以继续新增愿望放进来。空货架也可以直接删除。</div>`}
+            </div>
+          </section>
+        `).join("");
+      };
+
+      bindDragAndDrop = function () {
+        activeGoalsGridEl.querySelectorAll("[data-drag-handle]").forEach((handle) => {
+          handle.draggable = false;
+        });
+      };
+
+      moveGoalBeforeTarget = function (sourceGoalId, targetGoalId) {
+        const targetGoal = BudgetCore.getGoalById(state, targetGoalId);
+        const sourceGoal = BudgetCore.getGoalById(state, sourceGoalId);
+        if (!targetGoal || !sourceGoal) {
+          return;
+        }
+        if (sourceGoal.shelfId !== targetGoal.shelfId) {
+          BudgetCore.assignGoalToShelf(state, sourceGoalId, targetGoal.shelfId);
+          state = BudgetCore.loadState();
+        }
+        const activeGoals = BudgetCore.getActiveGoals(state);
+        const targetIndex = activeGoals.findIndex((item) => item.id === targetGoalId);
+        if (targetIndex < 0) {
+          return;
+        }
+        BudgetCore.moveGoalToIndex(state, sourceGoalId, targetIndex);
+        state = BudgetCore.loadState();
+        pendingMoveGoalId = null;
+        goalsMoveMode = false;
+        renderGoalsPage();
+      };
+
+      goalIconPickerEl.addEventListener("click", (event) => {
+        const deleteButton = event.target.closest("[data-icon-delete]");
+        if (deleteButton) {
+          const iconValue = deleteButton.dataset.iconValue || "";
+          BudgetCore.removeGoalIcon(state, {
+            value: iconValue,
+            label: deleteButton.dataset.iconLabel || ""
+          });
+          state = BudgetCore.loadState();
+          if (goalFormEl.elements.icon.value === iconValue) {
+            goalFormEl.elements.icon.value = "";
+          }
+          event.preventDefault();
+          event.stopImmediatePropagation();
+          syncGoalIconPicker();
+          return;
+        }
+
+        const button = event.target.closest("[data-icon-value]");
+        if (!button) {
+          return;
+        }
+        goalFormEl.elements.icon.value = button.dataset.iconValue || "";
+        syncGoalIconPicker();
+        syncDraft();
+        if (editingGoalId) {
+          renderGoalsPage();
+        }
+        event.preventDefault();
+        event.stopImmediatePropagation();
+      }, true);
+
+      activeGoalsGridEl.addEventListener("pointerup", (event) => {
+        if (event.target.closest("[data-drag-handle]")) {
+          event.preventDefault();
+          event.stopPropagation();
+        }
+      }, true);
+
+      activeGoalsGridEl.addEventListener("click", (event) => {
+        const shelfDeleteButton = event.target.closest("[data-shelf-delete]");
+        if (shelfDeleteButton) {
+          const shelfId = shelfDeleteButton.dataset.shelfDelete;
+          const result = BudgetCore.deleteWishShelf(state, shelfId);
+          if (!result.ok) {
+            if (result.reason === "not-empty") {
+              window.alert(`这一层货架还有 ${result.usedCount} 个愿望，请先把它们转移到别的货架，或者先删除这些愿望，再来删除货架。`);
+            } else if (result.reason === "minimum") {
+              window.alert("至少要保留 1 个货架，所以最后一个货架不能删除。");
+            }
+          } else {
+            state = BudgetCore.loadState();
+            renderShelfSelectOptions(goalShelfSelectEl, goalFormEl.elements.shelfId.value || getWishShelves()[0]?.id || "");
+            renderGoalsPage();
+          }
+          event.preventDefault();
+          event.stopImmediatePropagation();
+          return;
+        }
+
+        const dragHandle = event.target.closest("[data-drag-handle]");
+        if (dragHandle) {
+          const goalId = dragHandle.dataset.goalId;
+          if (!goalId) {
+            return;
+          }
+          pendingMoveGoalId = pendingMoveGoalId === goalId ? null : goalId;
+          goalsMoveMode = Boolean(pendingMoveGoalId);
+          event.preventDefault();
+          event.stopImmediatePropagation();
+          renderGoalsPage();
+          return;
+        }
+
+        const emptyShelf = event.target.closest(".empty-shelf-slot[data-shelf-id]");
+        if (emptyShelf && pendingMoveGoalId && goalsMoveMode) {
+          BudgetCore.assignGoalToShelf(state, pendingMoveGoalId, emptyShelf.dataset.shelfId);
+          state = BudgetCore.loadState();
+          pendingMoveGoalId = null;
+          goalsMoveMode = false;
+          event.preventDefault();
+          event.stopImmediatePropagation();
+          renderGoalsPage();
+          return;
+        }
+
+        const card = event.target.closest(".goal-card[data-goal-id]");
+        if (!card || event.target.closest("a, button, input, label, textarea, select")) {
+          return;
+        }
+        event.preventDefault();
+        event.stopImmediatePropagation();
+        if (goalsMoveMode && pendingMoveGoalId && pendingMoveGoalId !== card.dataset.goalId) {
+          moveGoalBeforeTarget(pendingMoveGoalId, card.dataset.goalId);
+          return;
+        }
+        window.location.href = `goal-detail.html?id=${encodeURIComponent(card.dataset.goalId)}`;
+      }, true);
+
+      syncGoalIconPicker();
+      renderGoalsPage();
+    })();
+  </script>
 </body>
 </html>

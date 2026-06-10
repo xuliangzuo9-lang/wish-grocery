@@ -482,5 +482,71 @@
 
     initDetailPage();
   </script>
+  <script>
+    (() => {
+      renderIconPicker = function () {
+        const currentValue = String(formEl.elements.icon.value || "").trim();
+        detailGoalIconPickerEl.innerHTML = BudgetCore.getGoalIconLibrary(state).map((item) => `
+          <div class="icon-picker-chip ${currentValue === item.value ? "is-active" : ""}">
+            <button class="icon-picker-chip-select" type="button" data-icon-value="${BudgetCore.escapeHtml(item.value)}" title="${BudgetCore.escapeHtml(item.label)}" aria-label="选择${BudgetCore.escapeHtml(item.label)}图标">
+              <span class="icon-picker-chip-icon">${BudgetCore.escapeHtml(item.value)}</span>
+              <span class="icon-picker-chip-label">${BudgetCore.escapeHtml(item.label)}</span>
+            </button>
+            <button class="icon-picker-chip-remove" type="button" data-icon-delete="true" data-icon-value="${BudgetCore.escapeHtml(item.value)}" data-icon-label="${BudgetCore.escapeHtml(item.label)}" aria-label="删除${BudgetCore.escapeHtml(item.label)}图标">×</button>
+          </div>
+        `).join("");
+        syncIconMeaning();
+      };
+
+      const baseRenderDetail = renderDetail;
+      renderDetail = function () {
+        baseRenderDetail();
+        const renderGoal = getRenderableGoal?.();
+        if (!renderGoal) {
+          return;
+        }
+        if (renderGoal.image) {
+          detailHeroVisualEl.innerHTML = `<img alt="${BudgetCore.escapeHtml(renderGoal.name)}" src="${BudgetCore.escapeHtml(renderGoal.image)}">`;
+        } else {
+          detailHeroVisualEl.innerHTML = BudgetCore.escapeHtml(renderGoal.icon || "愿");
+        }
+      };
+
+      detailGoalIconPickerEl.addEventListener("click", (event) => {
+        const deleteButton = event.target.closest("[data-icon-delete]");
+        if (deleteButton) {
+          const iconValue = deleteButton.dataset.iconValue || "";
+          BudgetCore.removeGoalIcon(state, {
+            value: iconValue,
+            label: deleteButton.dataset.iconLabel || ""
+          });
+          state = BudgetCore.loadState();
+          if (formEl.elements.icon.value === iconValue) {
+            formEl.elements.icon.value = "";
+          }
+          syncDraftFromForm();
+          event.preventDefault();
+          event.stopImmediatePropagation();
+          renderIconPicker();
+          renderDetail();
+          return;
+        }
+
+        const button = event.target.closest("[data-icon-value]");
+        if (!button) {
+          return;
+        }
+        formEl.elements.icon.value = button.dataset.iconValue || "";
+        syncDraftFromForm();
+        event.preventDefault();
+        event.stopImmediatePropagation();
+        renderIconPicker();
+        renderDetail();
+      }, true);
+
+      renderIconPicker();
+      renderDetail();
+    })();
+  </script>
 </body>
 </html>

@@ -115,6 +115,17 @@ function normalizeCustomGoalIcons(rawIcons) {
       return true;
     });
 }
+
+function normalizeHiddenGoalIcons(rawIcons) {
+  if (!Array.isArray(rawIcons)) {
+    return [];
+  }
+  return Array.from(new Set(rawIcons.map((item) => String(item || "").trim()).filter(Boolean)));
+}
+
+function getGoalIconKey(icon) {
+  return `${String(icon?.value || "").trim()}::${String(icon?.label || "").trim()}`;
+}
 const categoryColors = {
   "生活费": "#487a72",
   "备用金": "#d5a95a",
@@ -212,6 +223,7 @@ const seedState = {
       bgEnd: "#efe4d7"
     },
     customGoalIcons: [],
+    hiddenGoalIcons: [],
     allocationItemVisibility: {}
   }
 };
@@ -314,6 +326,7 @@ function normalizeState(raw) {
         bgEnd: raw.ui?.theme?.bgEnd ?? fallback.ui.theme.bgEnd
       },
       customGoalIcons: normalizeCustomGoalIcons(raw.ui?.customGoalIcons ?? fallback.ui.customGoalIcons),
+      hiddenGoalIcons: normalizeHiddenGoalIcons(raw.ui?.hiddenGoalIcons ?? fallback.ui.hiddenGoalIcons),
       allocationItemVisibility: raw.ui?.allocationItemVisibility ?? {}
     }
   };
@@ -568,11 +581,12 @@ function getMotivationalQuotes() {
 
 function getGoalIconLibrary(state = loadState()) {
   const customIcons = normalizeCustomGoalIcons(state?.ui?.customGoalIcons);
+  const hiddenKeys = new Set(normalizeHiddenGoalIcons(state?.ui?.hiddenGoalIcons));
   const merged = [...goalIconLibrary.map((icon) => ({ ...icon })), ...customIcons];
   const seen = new Set();
   return merged.filter((icon) => {
     const key = `${icon.value}::${icon.label}`;
-    if (seen.has(key)) {
+    if (seen.has(key) || hiddenKeys.has(key)) {
       return false;
     }
     seen.add(key);
@@ -590,10 +604,28 @@ function addCustomGoalIcon(state, payload) {
     state.ui = {};
   }
   const icons = normalizeCustomGoalIcons(state.ui.customGoalIcons);
+  const key = getGoalIconKey({ value, label });
   if (!icons.some((icon) => icon.value === value && icon.label === label)) {
     icons.unshift({ value, label });
   }
   state.ui.customGoalIcons = normalizeCustomGoalIcons(icons);
+  state.ui.hiddenGoalIcons = normalizeHiddenGoalIcons((state.ui.hiddenGoalIcons || []).filter((item) => item !== key));
+  saveState(state);
+  return { ok: true };
+}
+
+function removeGoalIcon(state, payload) {
+  const value = String(payload?.value || "").trim();
+  const label = String(payload?.label || "").trim();
+  if (!value || !label) {
+    return { ok: false, reason: "invalid" };
+  }
+  if (!state.ui) {
+    state.ui = {};
+  }
+  const key = getGoalIconKey({ value, label });
+  state.ui.customGoalIcons = normalizeCustomGoalIcons(state.ui.customGoalIcons).filter((icon) => getGoalIconKey(icon) !== key);
+  state.ui.hiddenGoalIcons = normalizeHiddenGoalIcons([...(state.ui.hiddenGoalIcons || []), key]);
   saveState(state);
   return { ok: true };
 }
@@ -1031,6 +1063,26 @@ function updateWishShelf(state, shelfId, updates = {}) {
   return { ok: true, shelf: { ...shelf } };
 }
 
+function deleteWishShelf(state, shelfId) {
+  const shelves = normalizeWishShelves(state.ui?.wishShelves, state.ui?.wishShelfRows || 2);
+  if (shelves.length <= 1) {
+    return { ok: false, reason: "minimum" };
+  }
+  const shelfIndex = shelves.findIndex((item) => item.id === shelfId);
+  if (shelfIndex < 0) {
+    return { ok: false, reason: "missing" };
+  }
+  const usedCount = state.goals.filter((goal) => goal.shelfId === shelfId).length;
+  if (usedCount > 0) {
+    return { ok: false, reason: "not-empty", usedCount };
+  }
+  shelves.splice(shelfIndex, 1);
+  state.ui.wishShelves = shelves;
+  state.ui.wishShelfRows = shelves.length;
+  saveState(state);
+  return { ok: true };
+}
+
 function getGoalsByShelf(state, options = {}) {
   const { includeCompleted = false } = options;
   const shelves = getWishShelves(state);
@@ -1130,6 +1182,7 @@ window.BudgetCore = {
   getMotivationalQuotes,
   getGoalIconLibrary,
   addCustomGoalIcon,
+  removeGoalIcon,
   getPinnedGoalCount,
   togglePinnedGoal,
   getGoalViews,
@@ -1158,6 +1211,7 @@ window.BudgetCore = {
   updateTheme,
   updateWishShelfRows,
   updateWishShelf,
+  deleteWishShelf,
   setAllocationVisibility,
   setAllocationVisibilityByKey,
   getAllocationVisibilityKey,
