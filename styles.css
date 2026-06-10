@@ -1221,6 +1221,15 @@ label span {
   border-radius: 999px;
 }
 
+.main-target-slider {
+  display: flex !important;
+  flex-wrap: nowrap;
+}
+
+.main-target-slider .main-target-tile {
+  flex: 0 0 248px;
+}
+
 .main-target-tile {
   position: relative;
   min-height: 150px;
@@ -2583,6 +2592,10 @@ label span {
   .main-target-grid,
   .main-target-slider {
     grid-auto-columns: minmax(232px, 82vw);
+  }
+
+  .main-target-slider .main-target-tile {
+    flex-basis: 82vw;
   }
 
   .wish-shelf-track {

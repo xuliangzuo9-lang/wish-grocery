@@ -1353,6 +1353,13 @@
         }
         mainGoalsGridEl.classList.add("main-target-slider");
         mainGoalsGridEl.innerHTML = cards.join("");
+        mainGoalsGridEl.style.display = "flex";
+        mainGoalsGridEl.style.flexWrap = "nowrap";
+        mainGoalsGridEl.style.overflowX = "auto";
+        mainGoalsGridEl.style.overflowY = "hidden";
+        mainGoalsGridEl.style.gap = "10px";
+        mainGoalsGridEl.style.webkitOverflowScrolling = "touch";
+        mainGoalsGridEl.style.touchAction = "pan-x";
       };
 
       renderHome();
